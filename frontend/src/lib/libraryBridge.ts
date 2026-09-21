@@ -1,29 +1,24 @@
-import type { LibrarySongsMessage } from "@/types/song";
 import useLibraryStore from "@/stores/libraryStore";
+import { sendToBackend, subscribeToBackend } from "@/lib/bridge";
 
-export const requestLibrary = () => {
-	window.webkit?.messageHandlers?.syncSongs?.postMessage(
-		JSON.stringify({ type: "get-library" }),
-	);
-};
+export const requestLibrary = () => sendToBackend({ type: "get-library" });
+
+export const openImportDialog = () =>
+	sendToBackend({ type: "open-import-dialog" });
+
+export const importFiles = (files: string[]) =>
+	sendToBackend({ type: "library-import-files", files });
 
 export const initializeLibraryBridge = () => {
-	const handleCppMessage = (event: Event) => {
-		const customEvent = event as CustomEvent;
-		const message = customEvent.detail;
+	return subscribeToBackend((message) => {
+		switch (message.type) {
+			case "library-import-result":
+				console.log(`Imported ${message.imported} song(s)`);
+				break;
 
-		console.log("[C++]:", message);
-
-		if (message?.type === "library-songs") {
-			const libraryMessage = message as LibrarySongsMessage;
-
-			useLibraryStore.getState().setSongs(libraryMessage.songs);
+			case "library-songs":
+				useLibraryStore.getState().setSongs(message.songs);
+				break;
 		}
-	};
-
-	window.addEventListener("syncsongs-message", handleCppMessage);
-
-	return () => {
-		window.removeEventListener("syncsongs-message", handleCppMessage);
-	};
+	});
 };

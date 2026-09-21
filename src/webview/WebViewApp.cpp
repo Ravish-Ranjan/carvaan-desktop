@@ -1,4 +1,5 @@
 #include "WebViewApp.hpp"
+#include "Protocol.hpp"
 
 #include <filesystem>
 #include <vector>
@@ -8,50 +9,6 @@
 #include <cstdint>
 
 std::string env = "development";
-
-namespace {
-    std::string escapeJson(const std::string& value) {
-        std::string result;
-        result.reserve(value.size());
-
-        for (const char character : value) {
-            switch (character) {
-                case '"':
-                    result += "\\\"";
-                    break;
-
-                case '\\':
-                    result += "\\\\";
-                    break;
-
-                case '\b':
-                    result += "\\b";
-                    break;
-
-                case '\f':
-                    result += "\\f";
-                    break;
-
-                case '\n':
-                    result += "\\n";
-                    break;
-
-                case '\r':
-                    result += "\\r";
-                    break;
-
-                case '\t':
-                    result += "\\t";
-                    break;
-
-                default:
-                    result += character;
-                    break;
-            }
-        }
-        return result;
-    }
-}
 
 WebViewApp::WebViewApp(LibraryManager& libraryManager)
     : libraryManager_(libraryManager),
@@ -218,40 +175,61 @@ bool matchEvent(gchar* message,std::string event_type) {
     return std::string(message).find(event_type) != std::string::npos;
 }
 
-void WebViewApp::handleScriptMessage(WebKitUserContentManager* manager,WebKitJavascriptResult* result,gpointer user_data) {
+void WebViewApp::handleScriptMessage(
+    WebKitUserContentManager* manager,
+    WebKitJavascriptResult* result,
+    gpointer user_data
+) {
     (void)manager;
 
     auto* self = static_cast<WebViewApp*>(user_data);
     JSCValue* value = webkit_javascript_result_get_js_value(result);
     gchar* message = jsc_value_to_string(value);
 
-    if (message != nullptr) {
-        g_print("[React]: %s\n", message);
-
-        if (matchEvent(message,R"("type":"library-import-files")")) {
-            self->handleLibraryImport(message);
-
-        } else if (matchEvent(message,R"("type":"open-import-dialog")")) {
-            self->openImportFileChooser();
-
-        } else if (matchEvent(message,R"("type":"get-library")")) {
-            self->sendLibrarySongs();
-
-        } else if (matchEvent(message,"frontend-ready")) {
-            self->sendToReact(R"({"type":"test","message":"Hello from C++"})");
-        
-        }
-
-        g_free(message);
+    if (message == nullptr) {
+        g_warning("[Bridge] Received null message from React");
+        webkit_javascript_result_unref(result);
+        return;
     }
 
+    try {
+        const Json event = Json::parse(message);
+
+        if (!event.contains("type")) {
+            g_warning("[Bridge] React message has no type");
+        } else if (!event.at("type").is_string()) {
+            g_warning("[Bridge] React message 'type' is not a string: %s",
+                Json::stringify(event.at("type")).c_str()
+            );
+        } else {
+            self->handleFrontendMessage(event);
+        }
+
+    } catch (const Json::exception& error) {
+        g_warning("[Bridge] Invalid Json message from React: %s",error.what());
+    }
+
+    g_free(message);
     webkit_javascript_result_unref(result);
 }
 
-void WebViewApp::sendToReact(const std::string& message){
+void WebViewApp::sendToReact(const Json& message){
     if (webview_ == nullptr) return;
-    std::string script = "window.dispatchEvent(new CustomEvent('syncsongs-message', { detail: " + message + " }))";
-    webkit_web_view_evaluate_javascript(webview_,script.c_str(),-1,nullptr,nullptr,nullptr,nullptr,nullptr);
+
+    std::string json = Json::stringify(message);
+
+    std::string script = 
+        "window.dispatchEvent("
+        "new CustomEvent('syncsongs-message', "
+        "{ detail: " + json + " })"
+        ")";
+        
+    webkit_web_view_evaluate_javascript(
+        webview_,
+        script.c_str(),
+        -1,
+        nullptr,nullptr,nullptr,nullptr,nullptr
+    );
 }
 
 void WebViewApp::createWindow(GtkApplication* app){
@@ -309,29 +287,40 @@ void WebViewApp::createWindow(GtkApplication* app){
     gtk_widget_show_all(window_);
 }
 
-void WebViewApp::handleLibraryImport(const std::string& message) {
-    const std::string prefix = R"({"type":"library-import-files","files":[)";
-    if (message.rfind(prefix, 0) != 0) return;
+void WebViewApp::handleLibraryImport(const Json& message) {
+    if (!message.contains("files")) {
+        g_warning("[Library] Missing files");
+        return;
+    }
 
-    std::string filesJson = message.substr(prefix.size());
-    if (!filesJson.empty() && filesJson.back() == '}') filesJson.pop_back();
+    const Json& filesJson = message.at("files");
+
+    if (!filesJson.is_array()) {
+        g_warning("[Library] files must be an array");
+        return;
+    }
 
     std::vector<std::filesystem::path> files;
-    std::size_t position = 0;
 
-    while (position < filesJson.size()) {
-        const std::size_t start = filesJson.find('"', position);
-        if (start == std::string::npos) break;
+    files.reserve(filesJson.size());
 
-        const std::size_t end = filesJson.find('"', start + 1);
-        if (end == std::string::npos) break;
+    for (const auto& file : filesJson) {
+        if (!file.is_string()) {
+            g_warning("[Library] File path must be a string");
+            return;
+        }
 
-        files.emplace_back(filesJson.substr(start + 1,end - start - 1));
-        position = end + 1;
+        files.emplace_back(file.get<std::string>());
     }
 
     const std::size_t imported = libraryManager_.importFiles(files);
-    g_print("Imported %zu song(s)\n",imported);
+
+    g_print("[Library] Imported %zu song(s)\n",imported);
+
+    sendToReact(Json{
+        {"type",Protocol::Backend::LIBRARY_IMPORT_RESULT},
+        {"imported",imported}
+    });
 }
 
 void WebViewApp::openImportFileChooser() {
@@ -373,7 +362,11 @@ void WebViewApp::openImportFileChooser() {
         g_slist_free(selectedFiles);
         const std::size_t imported = libraryManager_.importFiles(files);
         g_print("Imported %zu song(s)\n",imported);
-        sendToReact("{\"type\":\"library-import-result\",\"imported\":" +std::to_string(imported) +"}");
+
+        sendToReact(Json{
+            {"type",Protocol::Backend::LIBRARY_IMPORT_RESULT},
+            {"imported",imported}
+        });
     }
 
     gtk_widget_destroy(dialog);
@@ -382,26 +375,51 @@ void WebViewApp::openImportFileChooser() {
 void WebViewApp::sendLibrarySongs() {
     const auto songs = libraryManager_.getSongs();
 
-    std::string message = R"({"type":"library-songs","songs":[)";
+    nlohmann::json songsArray = nlohmann::json::array();
 
-    for (std::size_t i = 0; i < songs.size(); ++i) {
-        const Song& song = songs[i];
-
-        if (i > 0) {
-            message += ",";
-        }
-
-        message += "{";
-        message += "\"id\":" + std::to_string(song.id) + ",";
-        message += "\"name\":\"" + escapeJson(song.name) + "\",";
-        message += "\"filepath\":\"" + escapeJson(song.filepath) + "\",";
-        message += "\"filesize\":" + std::to_string(song.filesize) + ",";
-        message += "\"status\":\"" + escapeJson(songStatusToString(song.status)) + "\"";
-        message += "}";
+    for (const Song& song : songs) {
+        Json jsonSong = songToJson(song);
+        songsArray.push_back(std::move(jsonSong));
     }
 
-    message += "]}";
+    Json message = {
+        {"type",Protocol::Backend::LIBRARY_SONGS},
+        {"songs",std::move(songsArray)}
+    };
 
     sendToReact(message);
+}
+
+void WebViewApp::handleFrontendMessage(const Json& message) {
+    if (!message.contains("type")) {
+        g_warning("[Bridge] Frontend message has no type");
+        return;
+    }
+
+    const Json& typeJson = message.at("type");
+    const std::string type = typeJson.get<std::string>();
+
+
+    if (type == Protocol::Frontend::READY) {
+        handleFrontendReady(message);
+
+    } else if (type == Protocol::Frontend::GET_LIBRARY) {
+        sendLibrarySongs();
+
+    } else if (type == Protocol::Frontend::OPEN_IMPORT_DIALOG) {
+        openImportFileChooser();
+
+    } else if (type == Protocol::Frontend::LIBRARY_IMPORT_FILES) {
+        handleLibraryImport(message);
+
+    } else {
+        g_warning("[Bridge] Unknown frontend event: %s",type.c_str());
+    }
+}
+
+void WebViewApp::handleFrontendReady(const Json& message) {
+    (void)message;
+
+    g_print("[Bridge] Frontend is ready\n");
 }
 
