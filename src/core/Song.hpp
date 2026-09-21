@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 
+#include "utils/Json.hpp"
+
 enum class SongStatus {
     NEW,
     SYNCED,
@@ -24,3 +26,7 @@ struct Song {
 std::string songStatusToString(SongStatus status);
 
 SongStatus songStatusFromString(const std::string& status);
+
+Json songToJson(const Song& song);
+
+Song jsonToSong(const Json& json);

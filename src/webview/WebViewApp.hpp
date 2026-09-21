@@ -14,25 +14,23 @@ class WebViewApp {
 
     private:
         static void activate(GtkApplication *app, gpointer user_data);
+        static void handleUriScheme(WebKitURISchemeRequest *request,gpointer user_data);
+        static void handleScriptMessage(WebKitUserContentManager* manager,WebKitJavascriptResult* result,gpointer user_data);
 
-        void createWindow(GtkApplication *app);
-
-        std::string getFrontendPath() const;
-
-        static void handleUriScheme(
-            WebKitURISchemeRequest *request,
-            gpointer user_data);
-
-        void serveFrontendFile(WebKitURISchemeRequest *request);
-
+        
         GtkApplication *application_;
         GtkWidget *window_;
         WebKitWebView *webview_;
         LibraryManager& libraryManager_;
 
-        static void handleScriptMessage(WebKitUserContentManager* manager,WebKitJavascriptResult* result,gpointer user_data);
-        void sendToReact(const std::string& message);
+        std::string getFrontendPath() const;
+        
+        void createWindow(GtkApplication *app);
+        void serveFrontendFile(WebKitURISchemeRequest *request);
         void sendLibrarySongs();
-        void handleLibraryImport(const std::string& message);
         void openImportFileChooser();
+        void handleFrontendMessage(const Json& message);
+        void handleLibraryImport(const Json& message);
+        void handleFrontendReady(const Json& message);
+        void sendToReact(const Json& message);
 };

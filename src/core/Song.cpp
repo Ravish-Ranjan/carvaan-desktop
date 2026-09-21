@@ -42,3 +42,25 @@ SongStatus songStatusFromString(const std::string& status){
         "Unknown song status: " + status
     );
 }
+
+Json songToJson(const Song& song) {
+    return {
+        {"id",song.id},
+        {"name",song.name},
+        {"filepath",song.filepath},
+        {"filesize",song.filesize},
+        {"status",song.status}
+    };
+}
+
+Song jsonToSong(const Json& json) {
+    Song song;
+
+    song.id = json.at("id").get<std::int64_t>();
+    song.name = json.at("name").get<std::string>();
+    song.filepath = json.at("filepath").get<std::string>();
+    song.filesize = json.at("filesize").get<std::int64_t>();
+    song.status = songStatusFromString(json.at("status").get<std::string>());
+
+    return song;
+}
