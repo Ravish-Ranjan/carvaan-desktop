@@ -24,6 +24,11 @@ add_executable(sync-songs-app
     src/core/Song.cpp
     src/core/SongRepository.cpp
     src/core/LibraryManager.cpp
+    src/utils/Json.cpp
+)
+
+target_precompile_headers(sync-songs-app PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/include/json/json.hpp
 )
 
 target_include_directories(sync-songs-app PRIVATE
@@ -32,6 +37,7 @@ target_include_directories(sync-songs-app PRIVATE
     ${WEBKITGTK_INCLUDE_DIRS}
     ${SQLITE3_INCLUDE_DIRS}
     ${GSTREAMER_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 target_link_directories(sync-songs-app PRIVATE

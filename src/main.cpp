@@ -5,6 +5,8 @@
 #include "core/LibraryManager.hpp"
 #include "core/SongRepository.hpp"
 
+#include "utils/Json.hpp"
+
 #include <iostream>
 #include <filesystem>
 
@@ -36,6 +38,19 @@ int main(int argc, char* argv[]){
         return 1;
     }
     
+    Json data = {
+        {"a",1},
+        {"b",2}
+    };
+
+    std::string str_data = Json::stringify(data);
+
+    printf("%s\n",str_data.c_str());
+
+    Json parsed_data = Json::parse(str_data);
+
+    std::cout << parsed_data.dump() << std::endl;
+
     SongRepository repository(database);
     LibraryManager libraryManager(repository);
     WebViewApp app(libraryManager);

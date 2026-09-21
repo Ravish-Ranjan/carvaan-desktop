@@ -32,6 +32,7 @@ class WebViewApp {
 
         static void handleScriptMessage(WebKitUserContentManager* manager,WebKitJavascriptResult* result,gpointer user_data);
         void sendToReact(const std::string& message);
+        void sendLibrarySongs();
         void handleLibraryImport(const std::string& message);
         void openImportFileChooser();
 };

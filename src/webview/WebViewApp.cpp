@@ -5,6 +5,53 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <cstdint>
+
+std::string env = "development";
+
+namespace {
+    std::string escapeJson(const std::string& value) {
+        std::string result;
+        result.reserve(value.size());
+
+        for (const char character : value) {
+            switch (character) {
+                case '"':
+                    result += "\\\"";
+                    break;
+
+                case '\\':
+                    result += "\\\\";
+                    break;
+
+                case '\b':
+                    result += "\\b";
+                    break;
+
+                case '\f':
+                    result += "\\f";
+                    break;
+
+                case '\n':
+                    result += "\\n";
+                    break;
+
+                case '\r':
+                    result += "\\r";
+                    break;
+
+                case '\t':
+                    result += "\\t";
+                    break;
+
+                default:
+                    result += character;
+                    break;
+            }
+        }
+        return result;
+    }
+}
 
 WebViewApp::WebViewApp(LibraryManager& libraryManager)
     : libraryManager_(libraryManager),
@@ -167,6 +214,10 @@ void WebViewApp::serveFrontendFile(WebKitURISchemeRequest* request){
     g_object_unref(stream);
 }
 
+bool matchEvent(gchar* message,std::string event_type) {
+    return std::string(message).find(event_type) != std::string::npos;
+}
+
 void WebViewApp::handleScriptMessage(WebKitUserContentManager* manager,WebKitJavascriptResult* result,gpointer user_data) {
     (void)manager;
 
@@ -175,16 +226,20 @@ void WebViewApp::handleScriptMessage(WebKitUserContentManager* manager,WebKitJav
     gchar* message = jsc_value_to_string(value);
 
     if (message != nullptr) {
-        g_print("React -> C++: %s\n", message);
+        g_print("[React]: %s\n", message);
 
-        if (std::string(message).find(R"("type":"library-import-files")") != std::string::npos) {
+        if (matchEvent(message,R"("type":"library-import-files")")) {
             self->handleLibraryImport(message);
-        } else if (std::string(message).find(R"("type":"open-import-dialog")") != std::string::npos) {
-            self->openImportFileChooser();
-        }
 
-        if (std::string(message).find("frontend-ready") !=std::string::npos) {
+        } else if (matchEvent(message,R"("type":"open-import-dialog")")) {
+            self->openImportFileChooser();
+
+        } else if (matchEvent(message,R"("type":"get-library")")) {
+            self->sendLibrarySongs();
+
+        } else if (matchEvent(message,"frontend-ready")) {
             self->sendToReact(R"({"type":"test","message":"Hello from C++"})");
+        
         }
 
         g_free(message);
@@ -196,7 +251,7 @@ void WebViewApp::handleScriptMessage(WebKitUserContentManager* manager,WebKitJav
 void WebViewApp::sendToReact(const std::string& message){
     if (webview_ == nullptr) return;
     std::string script = "window.dispatchEvent(new CustomEvent('syncsongs-message', { detail: " + message + " }))";
-    webkit_web_view_run_javascript(webview_,script.c_str(),nullptr,nullptr,nullptr);
+    webkit_web_view_evaluate_javascript(webview_,script.c_str(),-1,nullptr,nullptr,nullptr,nullptr,nullptr);
 }
 
 void WebViewApp::createWindow(GtkApplication* app){
@@ -230,7 +285,11 @@ void WebViewApp::createWindow(GtkApplication* app){
         this
     );
     
-    webkit_web_view_load_uri(webview_,"syncsongs://app/index.html");
+    if (env == "production") {
+        webkit_web_view_load_uri(webview_,"syncsongs://app/index.html");
+    } else {
+        webkit_web_view_load_uri(webview_,"http://localhost:5173");
+    }
 
     g_signal_connect(webview_,"load-changed",
         G_CALLBACK(+[](
@@ -319,3 +378,30 @@ void WebViewApp::openImportFileChooser() {
 
     gtk_widget_destroy(dialog);
 }
+
+void WebViewApp::sendLibrarySongs() {
+    const auto songs = libraryManager_.getSongs();
+
+    std::string message = R"({"type":"library-songs","songs":[)";
+
+    for (std::size_t i = 0; i < songs.size(); ++i) {
+        const Song& song = songs[i];
+
+        if (i > 0) {
+            message += ",";
+        }
+
+        message += "{";
+        message += "\"id\":" + std::to_string(song.id) + ",";
+        message += "\"name\":\"" + escapeJson(song.name) + "\",";
+        message += "\"filepath\":\"" + escapeJson(song.filepath) + "\",";
+        message += "\"filesize\":" + std::to_string(song.filesize) + ",";
+        message += "\"status\":\"" + escapeJson(songStatusToString(song.status)) + "\"";
+        message += "}";
+    }
+
+    message += "]}";
+
+    sendToReact(message);
+}
+

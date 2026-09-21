@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Library, Smartphone, RefreshCw, Settings, Music2 } from "lucide-react";
+import { initializeLibraryBridge, requestLibrary } from "@/lib/libraryBridge";
+import useLibraryStore from "./stores/libraryStore";
 
 type Page = "library" | "devices" | "sync" | "settings";
 
@@ -32,33 +34,15 @@ const pages: {
 
 function App() {
 	const [page, setPage] = useState<Page>("library");
-	const [songsCount, setSongsCount] = useState<number>(0);
+	const { songs } = useLibraryStore();
 
 	useEffect(() => {
-		console.log("React Sync Songs frontend loaded");
-		if (window.webkit?.messageHandlers?.syncSongs) {
-			window.webkit.messageHandlers.syncSongs.postMessage(
-				JSON.stringify({ type: "frontend-ready" }),
-			);
-		}
+		const cleanup = initializeLibraryBridge();
+		requestLibrary();
 
-		const handleCppMessage = (event: Event) => {
-			const customEvent = event as CustomEvent;
-			console.log("C++ -> React:", JSON.stringify(customEvent.detail));
-			const message = customEvent.detail;
-			
-			if (message?.type === "library-import-result") {
-				console.log(`Imported ${message.imported} song(s)`);
-				setSongsCount(message?.imported)
-			}
-			
-		};
+		console.log(songs);
 
-		window.addEventListener("syncsongs-message", handleCppMessage);
-
-		return () => {
-			window.removeEventListener("syncsongs-message", handleCppMessage);
-		};
+		return cleanup;
 	}, []);
 
 	return (
@@ -138,7 +122,7 @@ function App() {
 				>
 					Test Library Import
 				</button>
-				<button
+				{/* <button
 					onClick={() => {
 						window.webkit?.messageHandlers?.syncSongs?.postMessage(
 							JSON.stringify({
@@ -148,7 +132,7 @@ function App() {
 					}}
 				>
 					Import Songs
-				</button>
+				</button> */}
 				<div className="h-[calc(100vh-4rem)] overflow-auto p-6">
 					{page === "library" && (
 						<section>
@@ -156,7 +140,6 @@ function App() {
 								<h3 className="text-2xl font-semibold">
 									Your Library
 								</h3>
-
 								<p className="mt-1 text-sm text-muted-foreground">
 									Manage your local Saregama music collection.
 								</p>
@@ -168,7 +151,7 @@ function App() {
 										Songs
 									</p>
 									<p className="mt-2 text-3xl font-semibold">
-										{songsCount}
+										{songs.length}
 									</p>
 								</div>
 
@@ -190,6 +173,11 @@ function App() {
 									</p>
 								</div>
 							</div>
+							<ul>
+								{songs.map((song) => {
+									return <li key={song.id}>{song.name}</li>;
+								})}
+							</ul>
 						</section>
 					)}
 
