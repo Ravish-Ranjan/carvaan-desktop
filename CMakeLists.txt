@@ -18,13 +18,18 @@ pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
 
 add_executable(sync-songs-app
     src/main.cpp
+
     src/webview/WebViewApp.cpp
+    
     src/core/Database.cpp
     src/core/AppPaths.cpp
     src/core/Song.cpp
     src/core/SongRepository.cpp
     src/core/LibraryManager.cpp
+    
     src/utils/Json.cpp
+
+    src/features/library/LibraryFeatures.cpp
 )
 
 target_precompile_headers(sync-songs-app PRIVATE

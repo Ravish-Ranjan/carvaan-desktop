@@ -1,0 +1,66 @@
+#!/bin/bash
+
+set -e
+
+args=("$@")
+
+project_dir="/home/ravish/GitHub/sync-song-app"
+
+cd "$project_dir"
+
+build() {
+    echo -en "\e[33;1m\tConfiguring build -> \e[0m"
+    cmake -S . -B build -G Ninja > /dev/null
+    
+    echo -en "\e[33;1mBuilding C++ -> \e[0m"
+    cmake --build build > /dev/null
+    
+    echo -e "\e[32;1mBuild\e[0m"
+}
+
+install() {
+    echo -en "\e[33;1m\tBuilding C++ -> \e[0m"
+    cmake -S . -B build -G Ninja > /dev/null
+    
+    rm -r ./install
+    
+    echo -en "\e[33;1mInstalling share files -> \e[0m"
+    cmake --install build --prefix "$PWD/install" > /dev/null
+
+    echo -e "\e[32;1mInstalled\e[0m"
+}
+
+build-deb() {
+    echo -en "\e[33;1m\tConfiguring build -> \e[0m"
+    cmake -S . -B build -G Ninja > /dev/null
+
+    echo -en "\e[33;1mBuilding C++ -> \e[0m"
+    cmake --build build > /dev/null
+    
+    cd ./build
+    
+    echo -en "\e[33;1mBuilding .deb -> \e[0m"
+    cpack -G DEB > /dev/null
+    cd "$project_dir"
+    
+    echo -e "\e[32;1mBuild\e[34;1m .deb\e[0m"
+}
+
+run() {
+    cd "$project_dir"
+    ./build/sync-songs-app
+}
+
+for arg in "${args[@]}"; do
+    if [ "$arg" == "build" ]; then
+        build
+    elif [ "$arg" == "install" ]; then
+        install
+    elif [ "$arg" == "build-deb" ]; then
+        build-deb
+    elif [ "$arg" == "run" ]; then
+        run
+    fi
+done
+
+set +e

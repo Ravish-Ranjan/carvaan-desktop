@@ -1,0 +1,64 @@
+webview features
+    1. check for prerequisite on install or run
+    2. scan phone lib {
+        check connectivity status();
+        pull phone lib to db
+    }
+    3. request sync
+
+adb features
+    1. function to check connectivity status
+    2. get devices
+    3. get device info
+    4. function to pull phone library to db
+    5. push tracks
+    6. delete track
+    7. trigger media scan
+
+sync features
+    1. compare libraries
+    2. create sync plan
+    3. sync
+    4. push new songs
+    5. delete pending songs
+    6. update statuses 
+
+songs features
+    1. get filesize
+    2. update filesize
+    3. file exists
+    4. delete file
+    5. open musicBrains picard
+    6. get metadata
+
+configure features
+    1. get settings
+    2. get phone destination
+    3. set phone destination
+    4. get pc music destination
+    5. set pc music destination
+    6. validate settings
+
+library features
+    1. deleting a track
+    2. get songs combined size
+    3. update file's filesize field after update
+    4. open new songs in musicbrainz picard
+    5. refresh library
+
+player features
+    1. play a song
+    2. pause
+    3. resume
+    4. stop
+    5. next
+    6. previous
+    7. seek to position
+    8. set volume
+    9. set muted
+    10. set shuffle
+    11. set repeat
+    12. get current song
+    13. get playback position
+    14. get duration
+    15. get state

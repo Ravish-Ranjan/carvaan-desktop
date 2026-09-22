@@ -4,6 +4,7 @@
 #include <webkit2/webkit2.h>
 
 #include "../core/LibraryManager.hpp" 
+#include "../features/library/LibraryFeatures.hpp"
 
 #include <string>
 
@@ -21,16 +22,12 @@ class WebViewApp {
         GtkApplication *application_;
         GtkWidget *window_;
         WebKitWebView *webview_;
-        LibraryManager& libraryManager_;
+        LibraryFeatures libraryFeatures_;
 
         std::string getFrontendPath() const;
         
         void createWindow(GtkApplication *app);
         void serveFrontendFile(WebKitURISchemeRequest *request);
-        void sendLibrarySongs();
-        void openImportFileChooser();
         void handleFrontendMessage(const Json& message);
-        void handleLibraryImport(const Json& message);
-        void handleFrontendReady(const Json& message);
         void sendToReact(const Json& message);
 };
