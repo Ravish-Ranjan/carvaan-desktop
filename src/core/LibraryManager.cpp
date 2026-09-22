@@ -6,7 +6,6 @@
 #include <fstream>
 
 namespace {
-
     bool isSupportedAudioFile(const std::filesystem::path& path) {
         if (!path.has_extension()) return false;
 
