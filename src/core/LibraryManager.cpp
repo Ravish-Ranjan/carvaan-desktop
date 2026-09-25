@@ -101,3 +101,16 @@ std::size_t LibraryManager::scanDirectory(const std::filesystem::path& directory
 std::vector<Song> LibraryManager::getSongs() { 
     return repository_.getAll();
 }
+
+std::int64_t LibraryManager::getCombinedSongsSize() {
+    return repository_.getCombinedSongsSize();
+}
+
+void LibraryManager::deleteTrack(std::int64_t id) {
+    // repository_.remove(id); mark it delete for sync instead of actual delete if file status is not new
+}
+
+std::vector<Song> LibraryManager::getNewSongs() {
+    return repository_.getNewSongs();
+}
+

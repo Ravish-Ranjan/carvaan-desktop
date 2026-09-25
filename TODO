@@ -40,10 +40,10 @@ configure features
     6. validate settings
 
 library features
-    1. deleting a track
-    2. get songs combined size
-    3. update file's filesize field after update
-    4. open new songs in musicbrainz picard
+    [x] 1. deleting a track
+    [x] 2. get songs combined size
+    [x] 3. update file's filesize field after update
+    [x] 4. open new songs in musicbrainz picard
     5. refresh library
 
 player features

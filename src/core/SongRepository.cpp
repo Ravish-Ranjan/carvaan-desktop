@@ -104,3 +104,51 @@ bool SongRepository::exists(const std::string& name) {
 
     return found;
 }
+
+std::vector<Song> SongRepository::getNewSongs() {
+    std::vector<Song> songs;
+
+    const char* sql = R"SQL(SELECT id, name, filepath, filesize, status FROM songs WHERE status = 'NEW' ORDER BY name COLLATE NOCASE;)SQL";
+
+    sqlite3_stmt* statement = nullptr;
+
+    if (sqlite3_prepare_v2(database_.handle(),sql,-1,&statement,nullptr) != SQLITE_OK) return songs;
+
+    while (sqlite3_step(statement) == SQLITE_ROW) {
+        Song song;
+
+        song.id = sqlite3_column_int64(statement, 0);
+        song.name = reinterpret_cast<const char*>(sqlite3_column_text(statement, 1));
+        song.filepath = reinterpret_cast<const char*>(sqlite3_column_text(statement, 2));
+        song.filesize = sqlite3_column_int64(statement, 3);
+        const char* status = reinterpret_cast<const char*>(sqlite3_column_text(statement, 4));
+
+        if (status != nullptr) {
+            song.status = songStatusFromString(status);
+        }
+        songs.push_back(std::move(song));
+    }
+    sqlite3_finalize(statement);
+
+    return songs;
+}
+
+std::int64_t SongRepository::getCombinedSongsSize() {
+    std::int64_t combinedSongsSize = 0;
+
+    const char* sql = R"SQL(SELECT COALESCE(SUM(filesize),0) from songs;)SQL";
+
+    sqlite3_stmt* statement = nullptr;
+
+    if (sqlite3_prepare_v2(database_.handle(),sql,-1,&statement,nullptr) != SQLITE_OK) return combinedSongsSize;
+
+    if (sqlite3_step(statement) == SQLITE_ROW) {
+        combinedSongsSize = sqlite3_column_int64(statement, 0);
+    }
+
+    sqlite3_finalize(statement);
+
+    return combinedSongsSize;
+}
+
+

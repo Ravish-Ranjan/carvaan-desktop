@@ -5,6 +5,11 @@
 
 #include <filesystem>
 #include <vector>
+#include <string>
+#include <cstdlib>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
 
 LibraryFeatures::LibraryFeatures(
     LibraryManager& libraryManager,
@@ -112,6 +117,53 @@ void LibraryFeatures::handleLibraryImport(const Json& message) {
         {"type",Protocol::Backend::LIBRARY_IMPORT_RESULT},
         {"imported",imported}
     });
+}
+
+void LibraryFeatures::openNewSongsInPicard() {
+    std::vector<Song> newSongs = libraryManager_.getNewSongs();
+
+    if (newSongs.empty()) return;
+
+    std::string cmd = "picard";
+
+    for(const Song& song: newSongs) {
+        cmd += " \"" + song.filepath + "\"";
+    }
+
+    std::system(cmd.c_str());
+}
+
+void LibraryFeatures::deleteTrack(std::int64_t id) {
+    libraryManager_.deleteTrack(id);
+}
+
+std::string LibraryFeatures::getCombinedSongsSize() {
+    std::int64_t combinedSongsSize = libraryManager_.getCombinedSongsSize();
+
+    constexpr double KB = 1024.0;
+    constexpr double MB = KB * 1024.0;
+    constexpr double GB = MB * 1024.0;
+    constexpr double TB = GB * 1024.0;
+    
+    std::ostringstream size;
+
+    if (combinedSongsSize < KB) {
+        size << combinedSongsSize << " B";
+    } else if (combinedSongsSize < MB) {
+        size << std::fixed << std::setprecision(2) << combinedSongsSize / KB << " KB";
+    } else if (combinedSongsSize < GB) {
+        size << std::fixed << std::setprecision(2) << combinedSongsSize / MB << " MB";
+    } else if (combinedSongsSize < TB) {
+        size << std::fixed << std::setprecision(2) << combinedSongsSize / GB << " GB";
+    }  else {
+        size << std::fixed << std::setprecision(2) << combinedSongsSize / TB << " TB";
+    }
+
+    return size.str();
+}
+
+void LibraryFeatures::refreshFilesize() {
+    
 }
 
 
