@@ -16,6 +16,8 @@ class SongRepository {
         bool remove(std::int64_t id);
         std::vector<Song> getAll();
         bool exists(const std::string& name);
+        std::vector<Song> getNewSongs();
+        std::int64_t getCombinedSongsSize();
 
     private:
         Database& database_;
