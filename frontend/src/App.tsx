@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { initializeLibraryBridge, requestLibrary } from "@/lib/libraryBridge";
+import {
+	getCombinedSize,
+	initializeLibraryBridge,
+	requestLibrary,
+} from "@/lib/libraryBridge";
 
 import { pages, type Page } from "@/components/pagetype";
 import Sidebar from "@/components/Sidebar";
@@ -15,6 +19,7 @@ function App() {
 	useEffect(() => {
 		const cleanup = initializeLibraryBridge();
 		requestLibrary();
+		getCombinedSize();
 
 		return cleanup;
 	}, []);

@@ -66,7 +66,7 @@ bool SongRepository::remove(std::int64_t id) {
 std::vector<Song> SongRepository::getAll() {
     std::vector<Song> songs;
 
-    const char* sql = R"SQL(SELECT id, name, filepath, filesize, status FROM songs ORDER BY name COLLATE NOCASE;)SQL";
+    const char* sql = R"SQL(SELECT id, name, filepath, filesize, status FROM songs ORDER BY id COLLATE NOCASE;)SQL";
 
     sqlite3_stmt* statement = nullptr;
 

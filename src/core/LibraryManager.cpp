@@ -107,7 +107,7 @@ std::int64_t LibraryManager::getCombinedSongsSize() {
 }
 
 void LibraryManager::deleteTrack(std::int64_t id) {
-    // repository_.remove(id); mark it delete for sync instead of actual delete if file status is not new
+    
 }
 
 std::vector<Song> LibraryManager::getNewSongs() {

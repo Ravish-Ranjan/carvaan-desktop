@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { Song } from "@/types/song";
+import { SONG_STATUSES, type Song, type SongRaw } from "@/types/song";
 
 interface LibraryStoreProps {
 	songs: Song[];
 	isLoading: boolean;
+	combinedSize: string;
 
-	setSongs: (songs: Song[]) => void;
+	setSongs: (rawsongs: SongRaw[]) => void;
 	addSongs: (songs: Song[]) => void;
 	removeSong: (id: number) => void;
 	clearSongs: () => void;
@@ -15,8 +16,14 @@ interface LibraryStoreProps {
 const useLibraryStore = create<LibraryStoreProps>((set) => ({
 	songs: [],
 	isLoading: false,
+	combinedSize: "0 B",
 
-	setSongs: (songs) => set({ songs }),
+	setSongs: (rawsongs) => {
+		const songs: Song[] = rawsongs.map((song) => {
+			return { ...song, status: SONG_STATUSES[song.status] };
+		});
+		set({ songs });
+	},
 
 	addSongs: (songs) =>
 		set((state) => ({ songs: [...state.songs, ...songs] })),

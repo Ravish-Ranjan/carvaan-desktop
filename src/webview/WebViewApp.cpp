@@ -311,6 +311,12 @@ void WebViewApp::handleFrontendMessage(const Json& message) {
     } else if (type == Protocol::Frontend::LIBRARY_IMPORT_FILES) {
         libraryFeatures_.handleLibraryImport(message);
 
+    } else if (type == Protocol::Frontend::GET_COMBINED_SIZE) {
+        libraryFeatures_.getCombinedSongsSize();
+
+    } else if (type == Protocol::Frontend::OPEN_NEW_SONGS_IN_PICARD) {
+        libraryFeatures_.openNewSongsInPicard();
+
     } else {
         g_warning("[Bridge] Unknown frontend event: %s",type.c_str());
     }

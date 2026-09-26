@@ -18,9 +18,10 @@ class LibraryFeatures {
         void sendLibrarySongs();
         void openImportFileChooser(GtkWindow* parentWindow);
         void handleLibraryImport(const Json& message);
+        void getCombinedSongsSize();
+
         void openNewSongsInPicard();
         void deleteTrack(std::int64_t id);
-        std::string getCombinedSongsSize();
 
     private:
         LibraryManager& libraryManager_;
