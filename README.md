@@ -93,17 +93,17 @@ cd frontend
 npm run dev
 ```
 
-2. In another terminal, configure and build backend:
+2. In another terminal, build backend:
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
+chmod +x ./ssa
+./ssa build
 ```
 
 3. Run backend executable:
 
 ```bash
-./build/sync-songs-app
+./ssa run
 ```
 
 In the current implementation, backend development mode loads the UI from `http://localhost:5173`.
@@ -118,18 +118,15 @@ npm run build
 ### Installable output (local)
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
-cmake --install build --prefix "$PWD/install"
+chmod +x ./ssa
+./ssa install
 ```
 
 ### Debian package
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
-cd build
-cpack -G DEB
+chmod +x ./ssa
+./ssa build-deb
 ```
 
 ### Quality checks
@@ -145,8 +142,8 @@ npm run build
 Backend:
 
 ```bash
-cmake -S . -B build -G Ninja
-cmake --build build
+chmod +x ./ssa
+./ssa build
 ```
 
 ## Repository layout
