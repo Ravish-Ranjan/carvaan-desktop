@@ -106,11 +106,55 @@ std::int64_t LibraryManager::getCombinedSongsSize() {
     return repository_.getCombinedSongsSize();
 }
 
-void LibraryManager::deleteTrack(std::int64_t id) {
-    
+DeleteAction LibraryManager::getDeleteAction(std::int64_t id) {
+    const auto song = repository_.getById(id);
+
+    if (!song.has_value()) return DeleteAction::INVALID;
+
+    switch (song->status) {
+        case SongStatus::NEW:
+        case SongStatus::MISSING_PHONE:
+            return DeleteAction::REMOVE_LOCAL;
+
+        case SongStatus::SYNCED:
+        case SongStatus::MISSING_LOCAL:
+            // Phone deletion required.
+            // Will be handled by the sync/ADB layer.
+            return DeleteAction::REMOVE_FROM_PHONE;
+
+        case SongStatus::MODIFIED:
+        case SongStatus::PENDING_DELETE:
+        case SongStatus::ERROR:
+            return DeleteAction::INVALID;
+    }
+
+    return DeleteAction::INVALID;
 }
 
 std::vector<Song> LibraryManager::getNewSongs() {
     return repository_.getNewSongs();
+}
+
+DeleteResult LibraryManager::deleteTrack(std::int64_t id) {
+    const DeleteAction action = getDeleteAction(id);
+
+    switch (action) {
+        case DeleteAction::REMOVE_LOCAL:
+            if (repository_.remove(id)) return DeleteResult::DELETED;
+
+        case DeleteAction::REMOVE_FROM_PHONE:
+            // Phone deletion will be handled by the ADB feature.
+            return DeleteResult::PHONE_DELETION_REQUIRED;
+
+        case DeleteAction::INVALID:
+            return DeleteResult::INVALID;
+    }
+
+    return DeleteResult::INVALID;
+
+}
+
+std::optional<Song> LibraryManager::getById(std::int64_t id) {
+    return repository_.getById(id);
 }
 

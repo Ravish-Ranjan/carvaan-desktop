@@ -7,6 +7,18 @@
 
 class SongRepository;
 
+enum class DeleteAction {
+    REMOVE_LOCAL,
+    REMOVE_FROM_PHONE,
+    INVALID
+};
+
+enum class DeleteResult {
+    DELETED,
+    PHONE_DELETION_REQUIRED,
+    INVALID
+};
+
 class LibraryManager {
     public:
         explicit LibraryManager(SongRepository& repository);
@@ -16,8 +28,10 @@ class LibraryManager {
         std::vector<Song> getSongs();
         std::int64_t getCombinedSongsSize();
         void refreshFilesize();
-        void deleteTrack(std::int64_t id);
+        DeleteAction getDeleteAction(std::int64_t id);
+        DeleteResult deleteTrack(std::int64_t id);
         std::vector<Song> getNewSongs();
+        std::optional<Song> getById(std::int64_t id);
 
     private:
         SongRepository& repository_;

@@ -62,7 +62,7 @@ function Library() {
 
 			<Separator />
 			{/* operations */}
-			<div className="text-lg grid sm:grid-cols-4 ">
+			<div className="text-lg grid sm:grid-cols-4 gap-2">
 				<Button onClick={openNewSongsInPicard}>Open new songs in Picard</Button>
 				<Button onClick={openImportDialog}>Import music files</Button>
 			</div>

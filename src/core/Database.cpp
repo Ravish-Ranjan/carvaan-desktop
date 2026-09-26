@@ -37,6 +37,24 @@ bool Database::initialize() {
             filesize INTEGER NOT NULL DEFAULT 0,
             status TEXT NOT NULL DEFAULT 'NEW'
         );
+        
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+        
+        INSERT OR IGNORE INTO settings (key, value) 
+        VALUES 
+            ('phone_destination', ''), 
+            ('pc_music_destination', '');
+
+        CREATE TABLE IF NOT EXISTS adb_devices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            serial TEXT NOT NULL UNIQUE,
+            model TEXT,
+            manufacturer TEXT,
+            state TEXT NOT NULL
+        );
     )SQL";
 
     char* errorMessage = nullptr;

@@ -38,9 +38,12 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    SongRepository repository(database);
-    LibraryManager libraryManager(repository);
-    WebViewApp app(libraryManager);
+    SongRepository songRepository(database);
+    SettingsRepository settingsRepository(database);
+
+    LibraryManager libraryManager(songRepository);
+    
+    WebViewApp app(libraryManager,settingsRepository);
 
     return app.run(argc, argv);
 }

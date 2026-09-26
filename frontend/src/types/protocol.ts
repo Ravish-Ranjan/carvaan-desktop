@@ -1,4 +1,4 @@
-import type {  SongRaw } from "@/types/song";
+import type { SongRaw } from "@/types/song";
 
 // ? Frontend → C++
 
@@ -27,13 +27,50 @@ export interface OpenNewSongsInPicard {
 	type: "open-new-songs-in-picard";
 }
 
+export interface OpenPcMusicDirectoryDialogMessage {
+	type: "open-pc-music-directory-dialog";
+}
+
+export interface GetSettings {
+	type: "get-settings";
+}
+
+export interface SetPhoneDestination {
+	type: "set-phone-destination";
+	path: string;
+}
+
+export interface GetPhoneDestination {
+	type: "get-phone-destination";
+}
+
+export interface SetPcMusicDestination {
+	type: "set-pc-music-destination";
+	path: string;
+}
+
+export interface GetPcMusicDestination {
+	type: "get-pc-music-destination";
+}
+
+export interface ValidateSettings {
+	type: "validate-settings";
+}
+
 export type FrontendMessage =
 	| FrontendReadyMessage
 	| GetLibraryMessage
 	| OpenImportDialogMessage
+	| LibraryImportFilesMessage
 	| GetCombinedSize
 	| OpenNewSongsInPicard
-	| LibraryImportFilesMessage;
+	| OpenPcMusicDirectoryDialogMessage
+	| GetSettings
+	| SetPhoneDestination
+	| GetPhoneDestination
+	| SetPcMusicDestination
+	| GetPcMusicDestination
+	| ValidateSettings;
 
 // ? C++ → Frontend
 
@@ -52,7 +89,50 @@ export interface CombinedSize {
 	size: string;
 }
 
+export interface PcMusicDirectorySelectedMessage {
+	type: "pc-music-directory-selected";
+	path: string;
+}
+
+export interface Settings {
+	type: "settings";
+	phoneDestination: string;
+	pcMusicDestination: string;
+}
+
+export interface PhoneDestination {
+	type: "phone-destination";
+	path: string;
+}
+
+export interface PhoneDestinationSet {
+	type: "phone-destination-set";
+	path: string;
+}
+
+export interface PcMusicDestination {
+	type: "pc-music-destination";
+	path: string;
+}
+
+export interface PcMusicDestinationSet {
+	type: "pc-music-destination-set";
+	path: string;
+}
+
+export interface SettingsValidation {
+	type: "settings-validation";
+	valid: boolean;
+}
+
 export type BackendMessage =
 	| LibrarySongsMessage
 	| LibraryImportResultMessage
-	| CombinedSize;
+	| CombinedSize
+	| PcMusicDirectorySelectedMessage
+	| Settings
+	| PhoneDestination
+	| PhoneDestinationSet
+	| PcMusicDestination
+	| PcMusicDestinationSet
+	| SettingsValidation;

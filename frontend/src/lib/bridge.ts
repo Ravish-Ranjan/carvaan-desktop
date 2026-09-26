@@ -53,6 +53,8 @@ const isBackendMessage = (message: unknown): message is BackendMessage => {
 		case "library-songs":
 		case "library-import-result":
 		case "combined-size":
+		case "pc-music-directory-selected":
+		case "settings":
 			return true;
 
 		default:

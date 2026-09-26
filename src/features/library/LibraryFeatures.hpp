@@ -6,14 +6,13 @@
 #include <gtk/gtk.h>
 #include <functional>
 
+
+
 class LibraryFeatures {
     public:
         using SendToReact = std::function<void(const Json&)>;
 
-        LibraryFeatures(
-            LibraryManager& libraryManager_,
-            SendToReact sendToReact
-        );
+        LibraryFeatures(LibraryManager& libraryManager_,SendToReact sendToReact);
 
         void sendLibrarySongs();
         void openImportFileChooser(GtkWindow* parentWindow);
@@ -21,7 +20,7 @@ class LibraryFeatures {
         void getCombinedSongsSize();
 
         void openNewSongsInPicard();
-        void deleteTrack(std::int64_t id);
+        DeleteResult deleteTrack(std::int64_t id);
 
     private:
         LibraryManager& libraryManager_;
