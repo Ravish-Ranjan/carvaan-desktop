@@ -5,12 +5,13 @@
 
 #include "../core/LibraryManager.hpp" 
 #include "../features/library/LibraryFeatures.hpp"
+#include "../features/configure/ConfigureFeatures.hpp"
 
 #include <string>
 
 class WebViewApp {
     public:
-        explicit WebViewApp(LibraryManager& libraryManager);
+        explicit WebViewApp(LibraryManager& libraryManager,SettingsRepository& settingsRepository);
         int run(int argc, char *argv[]);
 
     private:
@@ -23,6 +24,7 @@ class WebViewApp {
         GtkWidget *window_;
         WebKitWebView *webview_;
         LibraryFeatures libraryFeatures_;
+        ConfigureFeatures configureFeatures_;
 
         std::string getFrontendPath() const;
         

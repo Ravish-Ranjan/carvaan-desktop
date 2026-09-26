@@ -10,37 +10,37 @@ cd "$project_dir"
 
 build() {
     echo -en "\e[33;1m\tConfiguring build -> \e[0m"
-    cmake -S . -B build -G Ninja > /dev/null
+    cmake -S . -B build -G Ninja 1> /dev/null
     
     echo -en "\e[33;1mBuilding C++ -> \e[0m"
-    cmake --build build > /dev/null
+    cmake --build build 1> /dev/null
     
     echo -e "\e[32;1mBuild\e[0m"
 }
 
 install() {
     echo -en "\e[33;1m\tBuilding C++ -> \e[0m"
-    cmake -S . -B build -G Ninja > /dev/null
+    cmake -S . -B build -G Ninja 1> /dev/null
     
     rm -r ./install
     
     echo -en "\e[33;1mInstalling share files -> \e[0m"
-    cmake --install build --prefix "$PWD/install" > /dev/null
+    cmake --install build --prefix "$PWD/install" 1> /dev/null
 
     echo -e "\e[32;1mInstalled\e[0m"
 }
 
 build-deb() {
     echo -en "\e[33;1m\tConfiguring build -> \e[0m"
-    cmake -S . -B build -G Ninja > /dev/null
+    cmake -S . -B build -G Ninja 1> /dev/null
 
     echo -en "\e[33;1mBuilding C++ -> \e[0m"
-    cmake --build build > /dev/null
+    cmake --build build 1> /dev/null
     
     cd ./build
     
     echo -en "\e[33;1mBuilding .deb -> \e[0m"
-    cpack -G DEB > /dev/null
+    cpack -G DEB 1> /dev/null
     cd "$project_dir"
     
     echo -e "\e[32;1mBuild\e[34;1m .deb\e[0m"

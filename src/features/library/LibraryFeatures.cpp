@@ -133,8 +133,8 @@ void LibraryFeatures::openNewSongsInPicard() {
     std::system(cmd.c_str());
 }
 
-void LibraryFeatures::deleteTrack(std::int64_t id) {
-    libraryManager_.deleteTrack(id);
+DeleteResult LibraryFeatures::deleteTrack(std::int64_t id) {
+    return libraryManager_.deleteTrack(id);
 }
 
 void LibraryFeatures::getCombinedSongsSize() {

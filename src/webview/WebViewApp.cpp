@@ -10,8 +10,9 @@
 
 std::string env = "development";
 
-WebViewApp::WebViewApp(LibraryManager& libraryManager)
+WebViewApp::WebViewApp(LibraryManager& libraryManager,SettingsRepository& settingsRepository)
     : libraryFeatures_(libraryManager,[this](const Json& message) {sendToReact(message);}),
+      configureFeatures_(settingsRepository,[this](const Json& message) {sendToReact(message);}),
       application_(nullptr),
       window_(nullptr),
       webview_(nullptr) {}
@@ -307,16 +308,22 @@ void WebViewApp::handleFrontendMessage(const Json& message) {
         
     } else if (type == Protocol::Frontend::OPEN_IMPORT_DIALOG) {
         libraryFeatures_.openImportFileChooser(GTK_WINDOW(window_));
-
+        
     } else if (type == Protocol::Frontend::LIBRARY_IMPORT_FILES) {
         libraryFeatures_.handleLibraryImport(message);
 
     } else if (type == Protocol::Frontend::GET_COMBINED_SIZE) {
         libraryFeatures_.getCombinedSongsSize();
-
+        
     } else if (type == Protocol::Frontend::OPEN_NEW_SONGS_IN_PICARD) {
         libraryFeatures_.openNewSongsInPicard();
 
+    } else if (type == Protocol::Frontend::OPEN_PC_MUSIC_DIRECTORY_DIALOG) {
+        configureFeatures_.openPcMusicDirectoryDialog(GTK_WINDOW(window_));
+        
+    } else if (type == Protocol::Frontend::GET_SETTINGS) {
+        configureFeatures_.getSettings();
+        
     } else {
         g_warning("[Bridge] Unknown frontend event: %s",type.c_str());
     }

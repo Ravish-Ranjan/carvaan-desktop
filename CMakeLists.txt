@@ -26,10 +26,16 @@ add_executable(sync-songs-app
     src/core/Song.cpp
     src/core/SongRepository.cpp
     src/core/LibraryManager.cpp
+    src/core/AdbDeviceRepository.cpp
+    src/core/SettingsRepository.cpp
     
     src/utils/Json.cpp
 
     src/features/library/LibraryFeatures.cpp
+
+    src/features/configure/ConfigureFeatures.cpp
+
+    src/features/adb/AdbManager.cpp
 )
 
 target_precompile_headers(sync-songs-app PRIVATE

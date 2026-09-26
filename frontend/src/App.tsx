@@ -8,20 +8,27 @@ import {
 
 import { pages, type Page } from "@/components/pagetype";
 import Sidebar from "@/components/Sidebar";
-import Library from "@/components/sections/Library";
-import Devices from "@/components/sections/Devices";
-import Settings from "@/components/sections/Settings";
-import Sync from "@/components/sections/Sync";
+import { Library, Devices, Sync, Settings } from "@/components/sections";
+import { getSettings, initializeConfigureBridge } from "./lib/configureBridge";
 
 function App() {
 	const [page, setPage] = useState<Page>("library");
 
+	const allCleanup = (cleanupFunctions: (() => void)[]) => {
+		for (const cleanup of cleanupFunctions) {
+			cleanup();
+		}
+	};
+
 	useEffect(() => {
-		const cleanup = initializeLibraryBridge();
+		const cleanupLibraryBridge = initializeLibraryBridge();
+		const cleanupConfigureBridge = initializeConfigureBridge();
+
 		requestLibrary();
 		getCombinedSize();
+		getSettings();
 
-		return cleanup;
+		return () => allCleanup([cleanupLibraryBridge, cleanupConfigureBridge]);
 	}, []);
 
 	return (
