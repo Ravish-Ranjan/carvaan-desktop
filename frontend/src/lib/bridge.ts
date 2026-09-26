@@ -52,6 +52,7 @@ const isBackendMessage = (message: unknown): message is BackendMessage => {
 	switch (type) {
 		case "library-songs":
 		case "library-import-result":
+		case "combined-size":
 			return true;
 
 		default:

@@ -137,7 +137,7 @@ void LibraryFeatures::deleteTrack(std::int64_t id) {
     libraryManager_.deleteTrack(id);
 }
 
-std::string LibraryFeatures::getCombinedSongsSize() {
+void LibraryFeatures::getCombinedSongsSize() {
     std::int64_t combinedSongsSize = libraryManager_.getCombinedSongsSize();
 
     constexpr double KB = 1024.0;
@@ -159,7 +159,10 @@ std::string LibraryFeatures::getCombinedSongsSize() {
         size << std::fixed << std::setprecision(2) << combinedSongsSize / TB << " TB";
     }
 
-    return size.str();
+    sendToReact_(Json{
+        {"type",Protocol::Backend::COMBINED_SIZE},
+        {"size",size.str()}
+    });
 }
 
 void LibraryFeatures::refreshFilesize() {

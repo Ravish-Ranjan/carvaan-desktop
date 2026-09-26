@@ -1,4 +1,4 @@
-import type { Song } from "@/types/song";
+import type {  SongRaw } from "@/types/song";
 
 // ? Frontend → C++
 
@@ -19,17 +19,27 @@ export interface LibraryImportFilesMessage {
 	files: string[];
 }
 
+export interface GetCombinedSize {
+	type: "get-combined-size";
+}
+
+export interface OpenNewSongsInPicard {
+	type: "open-new-songs-in-picard";
+}
+
 export type FrontendMessage =
 	| FrontendReadyMessage
 	| GetLibraryMessage
 	| OpenImportDialogMessage
+	| GetCombinedSize
+	| OpenNewSongsInPicard
 	| LibraryImportFilesMessage;
 
 // ? C++ → Frontend
 
 export interface LibrarySongsMessage {
 	type: "library-songs";
-	songs: Song[];
+	songs: SongRaw[];
 }
 
 export interface LibraryImportResultMessage {
@@ -37,4 +47,12 @@ export interface LibraryImportResultMessage {
 	imported: number;
 }
 
-export type BackendMessage = LibrarySongsMessage | LibraryImportResultMessage;
+export interface CombinedSize {
+	type: "combined-size";
+	size: string;
+}
+
+export type BackendMessage =
+	| LibrarySongsMessage
+	| LibraryImportResultMessage
+	| CombinedSize;
