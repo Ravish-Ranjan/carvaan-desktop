@@ -18,6 +18,17 @@ export interface Song {
 	status: SongStatus;
 }
 
-export interface SongRaw extends Omit<Song,"status"> {
+export interface SongRaw extends Omit<Song, "status"> {
 	status: number;
+}
+
+export interface Metadata {
+	id: number;
+	url?: string;
+	title: string;
+	duration: number;
+	coverArt?: string;
+	artist?: string;
+	album?: string;
+	year?: number;
 }

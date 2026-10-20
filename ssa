@@ -4,8 +4,8 @@ set -e
 
 args=("$@")
 
-project_dir="/home/ravish/GitHub/sync-song-app"
-db_file="/home/ravish/.local/share/sync-songs-app/sync-songs.db"
+project_dir="/home/ravish/GitHub/carvaan-desktop"
+db_file="/home/ravish/.local/share/carvaan-desktop/carvaan-desktop.db"
 
 cd "$project_dir"
 
@@ -23,7 +23,7 @@ install() {
     echo -en "\e[33;1m\tBuilding C++ -> \e[0m"
     cmake -S . -B build -G Ninja 1> /dev/null
     
-    rm -r ./install
+    rm -rf ./install
     
     echo -en "\e[33;1mInstalling share files -> \e[0m"
     cmake --install build --prefix "$PWD/install" 1> /dev/null
@@ -49,12 +49,12 @@ build-deb() {
 
 run() {
     cd "$project_dir"
-    ./build/sync-songs-app
+    ./build/carvaan-desktop
 }
 
 cleardb() {
     echo -en "\e[33;1m\tClearing DB .deb -> \e[0m"
-    rm "$db_file"
+    rm -f "$db_file"
     echo -e "\e[32;1mDB cleared\e[0m"
 }
 

@@ -12,6 +12,7 @@ import { Library, Devices, Sync, Settings } from "@/components/sections";
 import { getSettings, initializeConfigureBridge } from "./lib/configureBridge";
 import Player from "./components/sections/Player";
 import useNavigationStore from "./stores/navigationStore";
+import { initializePlayerBridge } from "./lib/playerBridge";
 
 function App() {
 	const { page, navigate } = useNavigationStore();
@@ -27,6 +28,7 @@ function App() {
 		
 		cleanupFuncs.push(initializeLibraryBridge());
 		cleanupFuncs.push(initializeConfigureBridge());
+		cleanupFuncs.push(initializePlayerBridge());
 
 		requestLibrary();
 		getCombinedSize();
