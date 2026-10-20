@@ -32,3 +32,7 @@ export interface Metadata {
 	album?: string;
 	year?: number;
 }
+
+export interface QueueItem {
+	id: number;
+}

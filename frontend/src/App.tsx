@@ -11,6 +11,7 @@ import Sidebar from "@/components/Sidebar";
 import { Library, Devices, Sync, Settings } from "@/components/sections";
 import { getSettings, initializeConfigureBridge } from "./lib/configureBridge";
 import Player from "./components/sections/Player";
+import AudioProvider from "./components/AudioProvider";
 import useNavigationStore from "./stores/navigationStore";
 import { initializePlayerBridge } from "./lib/playerBridge";
 
@@ -38,7 +39,9 @@ function App() {
 	}, []);
 
 	return (
-		<div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+		<>
+			<AudioProvider />
+			<div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
 			{/* Sidebar */}
 			<Sidebar page={page} setPage={navigate} />
 			{/* Main content */}
@@ -58,7 +61,8 @@ function App() {
 					{page === "player" && <Player />}
 				</div>
 			</main>
-		</div>
+			</div>
+		</>
 	);
 }
 

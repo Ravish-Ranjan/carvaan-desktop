@@ -1,274 +1,344 @@
-// import { useState } from "react";
 import {
-	// CircleAlert,
-	// Heart,
-	// ListMusic,
-	// Pause,
+	Heart,
+	Music2,
+	Pause,
 	Play,
-	// Repeat,
-	// Repeat1,
-	// RepeatOff,
-	// RotateCcw,
-	// SkipForward,
-	// Volume2,
-	// VolumeX,
+	Repeat,
+	Repeat1,
+	Shuffle,
+	SkipBack,
+	SkipForward,
+	Volume2,
+	VolumeX,
 } from "lucide-react";
+import { useState } from "react";
+
 import usePlayerStore from "@/stores/playerStore";
+import {
+	toggleAudioPlayback,
+	seekAudio,
+	setAudioMuted,
+	setAudioVolume,
+} from "@/lib/audioEngine";
+import { playNextTrack, playPreviousTrack } from "@/lib/playerControls";
 
 const DEFAULT_COVER = "/assets/default-cover-art.jpeg";
 
-// function formatTime(seconds: number): string {
-// 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+function formatTime(seconds: number) {
+	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
 
-// 	const minutes = Math.floor(seconds / 60);
-// 	const remainingSeconds = Math.floor(seconds % 60);
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = Math.floor(seconds % 60);
 
-// 	return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
-// }
+	return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
 
 function MusicPlayer() {
-	// const [isPlaying, setIsPlaying] = useState(false);
-	// const [isLiked, setIsLiked] = useState(false);
-	// const [isMuted, setIsMuted] = useState(false);
-	// const [isShuffle, setIsShuffle] = useState(false);
-	// const [isRepeat, setIsRepeat] = useState(false);
+	const {
+		url,
+		title,
+		artist,
+		album,
+		year,
+		coverArt,
+		duration,
+		currentTime,
+		isPlaying,
+		volume,
+		isMuted,
+		shuffle,
+		repeat,
+		setIsMuted,
+		setVolume,
+		setShuffle,
+		setRepeat,
+	} = usePlayerStore();
 
-	const playedSong = usePlayerStore();
+	const [liked, setLiked] = useState(false);
+	const [artworkError, setArtworkError] = useState(false);
+	const [showRemaining, setShowRemaining] = useState(false);
 
-	// const handleMuted = (status: boolean | undefined) => {
-	// 	if (status) {
-	// 		setMuted(status);
-	// 	} else {
-	// 		setMuted(!muted);
-	// 	}
-	// };
+	const hasSong = Boolean(url);
 
-	// const handleShuffle = () => {
-	// 	setShuffle(!shuffle);
-	// };
+	const progress =
+		duration && duration > 0
+			? Math.min((currentTime / duration) * 100, 100)
+			: 0;
 
-	// const handleRepeat = () => {
-	// 	if (repeat === "all") setRepeat("one");
-	// 	if (repeat === "one") setRepeat("off");
-	// 	if (repeat === "off") setRepeat("all");
-	// };
+	const displayedTime = showRemaining
+		? `-${formatTime(Math.max(0, (duration ?? 0) - currentTime))}`
+		: formatTime(currentTime);
 
-	// const handlePosition = (value: number) => {
-	// 	seek(value);
-	// };
+	const handleSeek = (value: number) => {
+		if (!hasSong || !Number.isFinite(duration) || duration! <= 0) return;
 
-	// const handlePause = pause;
+		seekAudio(value);
+	};
 
-	// const handleResume = resume;
+	const handleVolumeChange = (value: number) => {
+		const nextVolume = Math.max(0, Math.min(1, value));
 
-	// const handleNext = next;
+		setVolume(nextVolume);
+		setAudioVolume(nextVolume);
 
-	// const handlePrevious = previous;
+		if (nextVolume > 0) {
+			setIsMuted(false);
+			setAudioMuted(false);
+		}
+	};
 
-	// const handleEnded = () => {
-	// 	next();
-	// };
+	const handleMute = () => {
+		const nextMuted = !isMuted;
 
-	// const handleStopped = () => {
-	// 	if (song) playSong(song?.id);
-	// 	else next();
-	// };
+		setIsMuted(nextMuted);
+		setAudioMuted(nextMuted);
+	};
 
-	// const handleError = next;
-
-	const handlePlayPause = () => {};
+	const handleRepeat = () => {
+		setRepeat(repeat === "off" ? "all" : repeat === "all" ? "one" : "off");
+	};
 
 	return (
-		<section
-			className={
-				"relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl dark:bg-[#111113] bg-[#11111300]"
-			}
-		>
+		<div className="relative flex aspect-square w-full h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#111113] text-white">
 			{/* Ambient background */}
 			<div className="pointer-events-none absolute inset-0 overflow-hidden">
-				<div className="absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-emerald-600/15 blur-[120px]" />
-				<div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-green-500/10 blur-[110px]" />
-				<div className="absolute inset-0 bg-linear-to-b from-white/[0.035] via-transparent dark:to-black/50 to-white/50" />
+				<div className="absolute -top-24 left-1/4 size-96 rounded-full bg-emerald-600/15 blur-[120px]" />
+				<div className="absolute bottom-0 right-0 size-80 rounded-full bg-green-500/10 blur-[110px]" />
+				<div className="absolute inset-0 bg-linear-to-b from-white/[0.035] via-transparent to-black/50" />
 			</div>
 
-			{/* Main content: vertical player layout */}
-			<div className="relative z-10 min-h-0 grid grid-cols-5 grid-rows-2 items-center gap-x-4 gap-y-8 overflow-y-auto px-5 py-5 sm:px-4">
-				{/* 1. Album artwork */}
-				<div className="w-full max-w-[min(72vw,360px)] shrink-0 col-span-2 row-span-1">
-					<div className="aspect-square overflow-hidden rounded-xl bg-white/6 shadow-2xl shadow-black/50 ring-1 ring-white/10">
-						<img
-							src={playedSong.coverArt || DEFAULT_COVER}
-							alt={`${playedSong.title} album artwork`}
-							onError={(event) => {
-								if (
-									event.currentTarget.src.endsWith(
-										DEFAULT_COVER,
-									)
-								)
-									return;
-								event.currentTarget.src = DEFAULT_COVER;
-							}}
-							className="h-full w-full object-cover"
-						/>
-					</div>
+			{/* Header */}
+			<header className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/8 px-4 py-3">
+				<div>
+					<p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+						Sync Songs
+					</p>
+					<h1 className="mt-1 text-sm font-semibold">Now Playing</h1>
 				</div>
 
-				{/* 2. Track information */}
-				<div className="w-full max-w-md dark:text-white col-span-3 row-span-1">
-					<h2 className="line-clamp-1 text-lg font-bold tracking-tight sm:text-md">
-						{playedSong.url !== "" ? playedSong.title : ""}
-					</h2>
-
-					<p className="md:mt-1 truncate text-sm dark:text-white/60">
-						{playedSong.url !== ""
-							? playedSong.artist
-							: "Select a track to start playing"}
-						{playedSong.url !== ""
-							? playedSong.year && <> | {playedSong.year}</>
-							: ""}
-					</p>
-					<p className="md:mt-1 truncate text-sm dark:text-white/35">
-						{playedSong.url !== "" ? playedSong.album : ""}
-					</p>
+				<div className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5">
+					<Music2 className="size-4 text-emerald-400" />
 				</div>
-
-				{/* 3. Playback controls */}
-				<div className="w-full col-span-5">
-					<audio src={playedSong.url} controls />
-
-					<div className="mt-1 flex items-center justify-between">
-						{/* <button
-							type="button"
-							title="Shuffle"
-							aria-pressed={shuffle}
-							disabled={!song}
-							onClick={() => handleShuffle()}
-							className={`rounded-full p-2 transition hover:bg-white/10 disabled:cursor-not-allowed ${
-								shuffle
-									? "text-emerald-400"
-									: "dark:text-white/45 hover:dark:text-white"
-							}`}
-						>
-							<Shuffle className="size-3 md:size-4.75" />
-						</button> */}
-
-						{/* <button
-							type="button"
-							disabled={!song}
-							title="Previous track"
-							onClick={() => handlePrevious()}
-							className="rounded-full p-2 dark:text-white/80 transition hover:scale-105 hover:dark:text-white disabled:cursor-not-allowed"
-						>
-							<SkipBack
-								className="size-3 md:size-6"
-								fill="currentColor"
+			</header>
+			{/* Main player */}
+			<div className="relative z-10 flex min-h-0 flex-1 flex-col justify-evenly gap-1 overflow-hidden p-4">
+				{/* Album artwork + Track information */}
+				<div className="flex min-h-0 items-center gap-4">
+					{/* Album artwork */}
+					<div className="w-[42%] shrink-0">
+						<div className="relative aspect-square overflow-hidden rounded-xl bg-white/5 shadow-xl shadow-black/40 ring-1 ring-white/10">
+							<img
+								src={
+									artworkError
+										? DEFAULT_COVER
+										: coverArt || DEFAULT_COVER
+								}
+								alt={
+									hasSong
+										? `${title} album artwork`
+										: "Album artwork"
+								}
+								onError={() => setArtworkError(true)}
+								className="size-full object-cover"
 							/>
-						</button> */}
 
-						<button
-							type="button"
-							disabled={playedSong.url !== ""}
-							onClick={() => handlePlayPause()}
-							className="flex size-9 md:size-16 items-center justify-center rounded-full bg-white text-black shadow-lg transition hover:scale-105 hover:bg-white/90 active:scale-95 disabled:cursor-not-allowed"
-						>
-							<Play
-								className="size-6 md:size-9"
-								fill="currentColor"
-							/>
-						</button>
-
-						{/* <button
-							type="button"
-							disabled={!song}
-							title="Next track"
-							onClick={() => handleNext()}
-							className="rounded-full p-2 dark:text-white/80 transition hover:scale-105 hover:dark:text-white disabled:cursor-not-allowed"
-						>
-							<SkipForward
-								className="size-3 md:size-6"
-								fill="currentColor"
-							/>
-						</button> */}
-
-						{/* <button
-							type="button"
-							title="Repeat"
-							disabled={!song}
-							aria-pressed={repeat == "all" || repeat == "one"}
-							onClick={() => handleRepeat()}
-							className={`rounded-full p-2 transition hover:bg-white/10 disabled:cursor-not-allowed ${
-								repeat == "all" || repeat == "one"
-									? "text-emerald-400"
-									: "dark:text-white/45 hover:dark:text-white"
-							}`}
-						>
-							{repeat === "all" && <Repeat />}
-							{repeat === "off" && <RepeatOff />}
-							{repeat === "one" && <Repeat1 />}
-						</button> */}
+							{!hasSong && (
+								<div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white/50">
+									<Music2 className="size-10" />
+								</div>
+							)}
+						</div>
 					</div>
 
-					{/* Volume and secondary controls */}
-					{/* <div className="mt-1 flex items-center justify-center border-t border-white/8 ">
-						<button
-							type="button"
-							disabled={!song}
-							title={isLiked ? "Unlike song" : "Like song"}
-							aria-pressed={isLiked}
-							onClick={() => setIsLiked(!isLiked)}
-							className={`rounded-full p-2 transition hover:bg-white/10 ${
-								isLiked
-									? "text-emerald-400"
-									: "dark:text-white/45 hover:dark:text-white disabled:cursor-not-allowed"
-							}`}
-						>
-							<Heart
-								size={20}
-								fill={isLiked ? "currentColor" : "none"}
-							/>
-						</button>
+					{/* Track information */}
+					<div className="flex min-w-0 flex-1 items-center gap-2">
+						<div className="min-w-0 flex-1">
+							<h2 className="truncate text-base font-bold tracking-tight">
+								{hasSong
+									? title || "Unknown title"
+									: "Nothing playing"}
+							</h2>
 
-						<div className="flex items-center gap-3">
-							<button
-								type="button"
-								title={muted ? "Unmute" : "Mute"}
-								disabled={!song}
-								onClick={() => handleMuted(undefined)}
-								className="dark:text-white/50 transition hover:dark:text-white disabled:cursor-not-allowed"
-							>
-								{muted || volume === 0 ? (
-									<VolumeX size={19} />
-								) : (
-									<Volume2 size={19} />
-								)}
-							</button>
-							<input
-								type="range"
-								min={0}
-								max={100}
-								disabled={!song}
-								value={muted ? 0 : volume}
-								onChange={(event) => {
-									setVolume(Number(event.target.value));
-									handleMuted(false);
-								}}
-								aria-label="Volume"
-								className="h-1 w-48 cursor-pointer accent-emerald-400 disabled:cursor-not-allowed"
-							/>
+							<p className="mt-1 truncate text-sm text-white/55">
+								{hasSong
+									? artist || "Unknown artist"
+									: "Choose a song from your library"}
+								{hasSong && year ? ` · ${year}` : ""}
+							</p>
+
+							{hasSong && album && (
+								<p className="mt-1 truncate text-xs text-white/35">
+									{album}
+								</p>
+							)}
 						</div>
 
 						<button
 							type="button"
-							disabled={!song}
-							title="Queue"
-							className="rounded-full p-2 dark:text-white/45 transition hover:bg-white/10 hover:dark:text-white disabled:cursor-not-allowed"
+							title={liked ? "Unlike track" : "Like track"}
+							aria-pressed={liked}
+							disabled={!hasSong}
+							onClick={() => setLiked((value) => !value)}
+							className="flex size-8 shrink-0 items-center justify-center rounded-full transition hover:bg-white/10 disabled:opacity-30"
 						>
-							<ListMusic size={20} />
+							<Heart
+								className={`size-4 ${
+									liked
+										? "fill-emerald-400 text-emerald-400"
+										: "text-white/55"
+								}`}
+							/>
 						</button>
-					</div> */}
+					</div>
+				</div>
+
+				{/* Playback controls */}
+				<div className="w-full">
+					{/* Progress */}
+					<div className="flex items-center gap-2">
+						<span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-white/45">
+							{displayedTime}
+						</span>
+
+						<input
+							type="range"
+							min={0}
+							max={duration && duration > 0 ? duration : 0}
+							step={0.1}
+							value={Math.min(currentTime, duration ?? 0)}
+							disabled={!hasSong || !duration}
+							onChange={(event) =>
+								handleSeek(Number(event.target.value))
+							}
+							aria-label="Playback position"
+							style={{
+								background: `linear-gradient(to right, #34d399 ${progress}%, rgba(255,255,255,0.14) ${progress}%)`,
+							}}
+							className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full disabled:cursor-not-allowed disabled:opacity-40 [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow"
+						/>
+
+						<button
+							type="button"
+							title="Toggle remaining time"
+							onClick={() => setShowRemaining((value) => !value)}
+							className="w-9 shrink-0 text-left text-[10px] tabular-nums text-white/45 hover:text-white"
+						>
+							{formatTime(duration ?? 0)}
+						</button>
+					</div>
+
+					{/* Playback buttons */}
+					<div className="mt-3 flex items-center justify-between">
+						<button
+							type="button"
+							title="Shuffle"
+							aria-pressed={shuffle}
+							disabled={!hasSong}
+							onClick={() => setShuffle(!shuffle)}
+							className={`flex size-8 items-center justify-center rounded-full transition hover:bg-white/10 disabled:opacity-30 ${
+								shuffle ? "text-emerald-400" : "text-white/45"
+							}`}
+						>
+							<Shuffle className="size-4" />
+						</button>
+
+						<button
+							type="button"
+							title="Previous track"
+							disabled={!hasSong}
+							onClick={playPreviousTrack}
+							className="flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 disabled:opacity-30"
+						>
+							<SkipBack className="size-4" fill="currentColor" />
+						</button>
+
+						<button
+							type="button"
+							title={isPlaying ? "Pause" : "Play"}
+							disabled={!hasSong}
+							onClick={() => void toggleAudioPlayback()}
+							className="flex size-12 items-center justify-center rounded-full bg-white text-black shadow-xl shadow-black/30 transition hover:bg-white/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							{isPlaying ? (
+								<Pause className="size-5" fill="currentColor" />
+							) : (
+								<Play
+									className="ml-1 size-5"
+									fill="currentColor"
+								/>
+							)}
+						</button>
+
+						<button
+							type="button"
+							title="Next track"
+							disabled={!hasSong}
+							onClick={playNextTrack}
+							className="flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 disabled:opacity-30"
+						>
+							<SkipForward
+								className="size-4"
+								fill="currentColor"
+							/>
+						</button>
+
+						<button
+							type="button"
+							title={`Repeat: ${repeat}`}
+							aria-pressed={repeat !== "off"}
+							disabled={!hasSong}
+							onClick={handleRepeat}
+							className={`flex size-8 items-center justify-center rounded-full transition hover:bg-white/10 disabled:opacity-30 ${
+								repeat !== "off"
+									? "text-emerald-400"
+									: "text-white/45"
+							}`}
+						>
+							{repeat === "one" ? (
+								<Repeat1 className="size-4" />
+							) : (
+								<Repeat className="size-4" />
+							)}
+						</button>
+					</div>
+
+					{/* Volume */}
+					<div className="mt-3 flex items-center justify-center gap-2 border-t border-white/8 pt-3">
+						<button
+							type="button"
+							title={isMuted ? "Unmute" : "Mute"}
+							disabled={!hasSong}
+							onClick={handleMute}
+							className="flex size-7 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+						>
+							{isMuted || volume === 0 ? (
+								<VolumeX className="size-4" />
+							) : (
+								<Volume2 className="size-4" />
+							)}
+						</button>
+
+						<input
+							type="range"
+							min={0}
+							max={1}
+							step={0.01}
+							value={isMuted ? 0 : volume}
+							disabled={!hasSong}
+							onChange={(event) =>
+								handleVolumeChange(Number(event.target.value))
+							}
+							aria-label="Volume"
+							className="h-1 w-32 max-w-full cursor-pointer accent-emerald-400 disabled:cursor-not-allowed disabled:opacity-30"
+						/>
+
+						<span className="w-8 shrink-0 text-xs tabular-nums text-white/40">
+							{Math.round((isMuted ? 0 : volume) * 100)}%
+						</span>
+					</div>
 				</div>
 			</div>
-		</section>
+		</div>
 	);
 }
 

@@ -13,6 +13,8 @@ class PlayerFeatures {
 
         void playSong(const Json& message);
 
+        ~PlayerFeatures();
+
     private:
         LibraryManager& libraryManager_;
         SendToReact sendToReact_;
