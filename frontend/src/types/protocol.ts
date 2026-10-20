@@ -57,6 +57,11 @@ export interface ValidateSettings {
 	type: "validate-settings";
 }
 
+export interface PlaySong {
+	type: "play-song";
+	id: number;
+}
+
 export type FrontendMessage =
 	| FrontendReadyMessage
 	| GetLibraryMessage
@@ -70,7 +75,8 @@ export type FrontendMessage =
 	| GetPhoneDestination
 	| SetPcMusicDestination
 	| GetPcMusicDestination
-	| ValidateSettings;
+	| ValidateSettings
+	| PlaySong;
 
 // ? C++ → Frontend
 
@@ -125,6 +131,12 @@ export interface SettingsValidation {
 	valid: boolean;
 }
 
+export interface SongPlaying {
+	type: "song-playing";
+	id: number;
+	fileurl: string;
+}
+
 export type BackendMessage =
 	| LibrarySongsMessage
 	| LibraryImportResultMessage
@@ -135,4 +147,5 @@ export type BackendMessage =
 	| PhoneDestinationSet
 	| PcMusicDestination
 	| PcMusicDestinationSet
-	| SettingsValidation;
+	| SettingsValidation
+	| SongPlaying;

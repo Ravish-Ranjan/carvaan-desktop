@@ -55,6 +55,7 @@ const isBackendMessage = (message: unknown): message is BackendMessage => {
 		case "combined-size":
 		case "pc-music-directory-selected":
 		case "settings":
+		case "song-playing":
 			return true;
 
 		default:

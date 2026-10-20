@@ -1,102 +1,82 @@
-import { useState } from "react";
+// import { useState } from "react";
 import {
-	CircleAlert,
+	// CircleAlert,
 	// Heart,
 	// ListMusic,
-	Pause,
+	// Pause,
 	Play,
-	Repeat,
-	Repeat1,
-	RepeatOff,
-	RotateCcw,
-	Shuffle,
-	SkipBack,
-	SkipForward,
-	Volume2,
-	VolumeX,
+	// Repeat,
+	// Repeat1,
+	// RepeatOff,
+	// RotateCcw,
+	// SkipForward,
+	// Volume2,
+	// VolumeX,
 } from "lucide-react";
-import type { Song } from "@/types/song";
 import usePlayerStore from "@/stores/playerStore";
-import { playerBridge } from "@/lib/playerBridge";
 
 const DEFAULT_COVER = "/assets/default-cover-art.jpeg";
 
-function formatTime(seconds: number): string {
-	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+// function formatTime(seconds: number): string {
+// 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
 
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = Math.floor(seconds % 60);
+// 	const minutes = Math.floor(seconds / 60);
+// 	const remainingSeconds = Math.floor(seconds % 60);
 
-	return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
-}
+// 	return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+// }
 
-function MusicPlayer({ song }: { song: Song | null }) {
+function MusicPlayer() {
 	// const [isPlaying, setIsPlaying] = useState(false);
 	// const [isLiked, setIsLiked] = useState(false);
 	// const [isMuted, setIsMuted] = useState(false);
 	// const [isShuffle, setIsShuffle] = useState(false);
 	// const [isRepeat, setIsRepeat] = useState(false);
-	const [volume, setVolume] = useState(70);
 
-	const { muted, shuffle, repeat, position, playstate } = usePlayerStore();
-	const {
-		setMuted,
-		setShuffle,
-		setRepeat,
-		seek,
-		pause,
-		resume,
-		next,
-		previous,
-		playSong,
-	} = playerBridge;
+	const playedSong = usePlayerStore();
 
-	const duration = song?.duration || 0;
-	const progress = duration > 0 ? (position / duration) * 100 : 0;
-	const title = song?.title || song?.name;
-	const artist = song?.artist || "Unknown artist";
-	const album = song?.album || "Unknown album";
+	// const handleMuted = (status: boolean | undefined) => {
+	// 	if (status) {
+	// 		setMuted(status);
+	// 	} else {
+	// 		setMuted(!muted);
+	// 	}
+	// };
 
-	const handleMuted = (status: boolean | undefined) => {
-		if (status) {
-			setMuted(status);
-		} else {
-			setMuted(!muted);
-		}
-	};
+	// const handleShuffle = () => {
+	// 	setShuffle(!shuffle);
+	// };
 
-	const handleShuffle = () => {
-		setShuffle(!shuffle);
-	};
+	// const handleRepeat = () => {
+	// 	if (repeat === "all") setRepeat("one");
+	// 	if (repeat === "one") setRepeat("off");
+	// 	if (repeat === "off") setRepeat("all");
+	// };
 
-	const handleRepeat = () => {
-		if (repeat === "all") setRepeat("one");
-		if (repeat === "one") setRepeat("off");
-		if (repeat === "off") setRepeat("all");
-	};
+	// const handlePosition = (value: number) => {
+	// 	seek(value);
+	// };
 
-	const handlePosition = (value: number) => {
-		seek(value);
-	};
+	// const handlePause = pause;
 
-	const handlePause = pause;
+	// const handleResume = resume;
 
-	const handleResume = resume;
+	// const handleNext = next;
 
-	const handleNext = next;
+	// const handlePrevious = previous;
 
-	const handlePrevious = previous;
+	// const handleEnded = () => {
+	// 	next();
+	// };
 
-	const handleEnded = () => {
-		next();
-	};
+	// const handleStopped = () => {
+	// 	if (song) playSong(song?.id);
+	// 	else next();
+	// };
 
-	const handleStopped = () => {
-		if (song) playSong(song?.id);
-		else next();
-	};
+	// const handleError = next;
 
-	const handleError = next;
+	const handlePlayPause = () => {};
 
 	return (
 		<section
@@ -117,8 +97,8 @@ function MusicPlayer({ song }: { song: Song | null }) {
 				<div className="w-full max-w-[min(72vw,360px)] shrink-0 col-span-2 row-span-1">
 					<div className="aspect-square overflow-hidden rounded-xl bg-white/6 shadow-2xl shadow-black/50 ring-1 ring-white/10">
 						<img
-							src={song?.coverArt || DEFAULT_COVER}
-							alt={`${title} album artwork`}
+							src={playedSong.coverArt || DEFAULT_COVER}
+							alt={`${playedSong.title} album artwork`}
 							onError={(event) => {
 								if (
 									event.currentTarget.src.endsWith(
@@ -136,45 +116,28 @@ function MusicPlayer({ song }: { song: Song | null }) {
 				{/* 2. Track information */}
 				<div className="w-full max-w-md dark:text-white col-span-3 row-span-1">
 					<h2 className="line-clamp-1 text-lg font-bold tracking-tight sm:text-md">
-						{song ? title : ""}
+						{playedSong.url !== "" ? playedSong.title : ""}
 					</h2>
 
 					<p className="md:mt-1 truncate text-sm dark:text-white/60">
-						{song ? artist : "Select a track to start playing"}
-						{song ? song?.year && <> | {song?.year}</> : ""}
+						{playedSong.url !== ""
+							? playedSong.artist
+							: "Select a track to start playing"}
+						{playedSong.url !== ""
+							? playedSong.year && <> | {playedSong.year}</>
+							: ""}
 					</p>
 					<p className="md:mt-1 truncate text-sm dark:text-white/35">
-						{song ? album : ""}
+						{playedSong.url !== "" ? playedSong.album : ""}
 					</p>
 				</div>
 
 				{/* 3. Playback controls */}
 				<div className="w-full col-span-5">
-					<div>
-						<input
-							type="range"
-							min={0}
-							max={Math.max(duration, 1)}
-							step={1}
-							value={Math.min(position, duration || 0)}
-							disabled={!song}
-							onChange={(event) =>
-								handlePosition(Number(event.target.value))
-							}
-							aria-label="Playback position"
-							style={{
-								background: `linear-gradient(to right, oklch(76.5% 0.177 163.223) ${progress}%, rgba(127,127,127,0.50) ${progress}%)`,
-							}}
-							className="h-1.5 w-full cursor-pointer appearance-none rounded-full accent-emerald-400 disabled:cursor-not-allowed"
-						/>
-						<div className="mt-1 flex justify-between text-xs tabular-nums dark:text-white/40">
-							<span>{formatTime(position)}</span>
-							<span>{formatTime(duration)}</span>
-						</div>
-					</div>
+					<audio src={playedSong.url} controls />
 
 					<div className="mt-1 flex items-center justify-between">
-						<button
+						{/* <button
 							type="button"
 							title="Shuffle"
 							aria-pressed={shuffle}
@@ -187,9 +150,9 @@ function MusicPlayer({ song }: { song: Song | null }) {
 							}`}
 						>
 							<Shuffle className="size-3 md:size-4.75" />
-						</button>
+						</button> */}
 
-						<button
+						{/* <button
 							type="button"
 							disabled={!song}
 							title="Previous track"
@@ -200,67 +163,21 @@ function MusicPlayer({ song }: { song: Song | null }) {
 								className="size-3 md:size-6"
 								fill="currentColor"
 							/>
-						</button>
+						</button> */}
 
 						<button
 							type="button"
-							title={playstate}
-							disabled={!song}
-							onClick={() => {
-								switch (playstate) {
-									case "playing":
-										handlePause();
-										break;
-									case "paused":
-										handleResume();
-										break;
-									case "ended":
-										handleEnded();
-										break;
-									case "stopped":
-										handleStopped();
-										break;
-									case "error":
-										handleError();
-										break;
-									default:
-								}
-							}}
+							disabled={playedSong.url !== ""}
+							onClick={() => handlePlayPause()}
 							className="flex size-9 md:size-16 items-center justify-center rounded-full bg-white text-black shadow-lg transition hover:scale-105 hover:bg-white/90 active:scale-95 disabled:cursor-not-allowed"
 						>
-							{playstate === "playing" && (
-								<Pause
-									className="size-6 md:size-9"
-									fill="currentColor"
-								/>
-							)}
-							{playstate === "paused" && (
-								<Play
-									className="size-6 md:size-9"
-									fill="currentColor"
-								/>
-							)}
-							{playstate === "ended" && (
-								<RotateCcw
-									className="size-6 md:size-9"
-									fill="currentColor"
-								/>
-							)}
-							{playstate === "error" && (
-								<CircleAlert
-									className="size-6 md:size-9"
-									fill="currentColor"
-								/>
-							)}
-							{playstate === "stopped" && (
-								<Play
-									className="size-6 md:size-9"
-									fill="currentColor"
-								/>
-							)}
+							<Play
+								className="size-6 md:size-9"
+								fill="currentColor"
+							/>
 						</button>
 
-						<button
+						{/* <button
 							type="button"
 							disabled={!song}
 							title="Next track"
@@ -271,9 +188,9 @@ function MusicPlayer({ song }: { song: Song | null }) {
 								className="size-3 md:size-6"
 								fill="currentColor"
 							/>
-						</button>
+						</button> */}
 
-						<button
+						{/* <button
 							type="button"
 							title="Repeat"
 							disabled={!song}
@@ -288,12 +205,12 @@ function MusicPlayer({ song }: { song: Song | null }) {
 							{repeat === "all" && <Repeat />}
 							{repeat === "off" && <RepeatOff />}
 							{repeat === "one" && <Repeat1 />}
-						</button>
+						</button> */}
 					</div>
 
 					{/* Volume and secondary controls */}
-					<div className="mt-1 flex items-center justify-center border-t border-white/8 ">
-						{/* <button
+					{/* <div className="mt-1 flex items-center justify-center border-t border-white/8 ">
+						<button
 							type="button"
 							disabled={!song}
 							title={isLiked ? "Unlike song" : "Like song"}
@@ -309,7 +226,7 @@ function MusicPlayer({ song }: { song: Song | null }) {
 								size={20}
 								fill={isLiked ? "currentColor" : "none"}
 							/>
-						</button> */}
+						</button>
 
 						<div className="flex items-center gap-3">
 							<button
@@ -340,15 +257,15 @@ function MusicPlayer({ song }: { song: Song | null }) {
 							/>
 						</div>
 
-						{/* <button
+						<button
 							type="button"
 							disabled={!song}
 							title="Queue"
 							className="rounded-full p-2 dark:text-white/45 transition hover:bg-white/10 hover:dark:text-white disabled:cursor-not-allowed"
 						>
 							<ListMusic size={20} />
-						</button> */}
-					</div>
+						</button>
+					</div> */}
 				</div>
 			</div>
 		</section>

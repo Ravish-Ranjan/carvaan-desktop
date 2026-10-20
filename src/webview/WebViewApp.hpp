@@ -2,10 +2,12 @@
 
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
+#include <libsoup/soup.h>
 
 #include "../core/LibraryManager.hpp" 
 #include "../features/library/LibraryFeatures.hpp"
 #include "../features/configure/ConfigureFeatures.hpp"
+#include "../features/player/PlayerFeatures.hpp"
 
 #include <string>
 
@@ -25,6 +27,20 @@ class WebViewApp {
         WebKitWebView *webview_;
         LibraryFeatures libraryFeatures_;
         ConfigureFeatures configureFeatures_;
+        PlayerFeatures playerFeatures_;
+        SoupServer* mediaServer_;
+
+        guint mediaServerPort_;
+        
+        bool startMediaServer();
+        void stopMediaServer();
+        static void handleMediaRequest(
+            SoupServer* server,
+            SoupServerMessage* message,
+            const char* path,
+            GHashTable* query,
+            gpointer user_data
+        );
 
         std::string getFrontendPath() const;
         
