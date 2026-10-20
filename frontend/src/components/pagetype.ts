@@ -1,6 +1,12 @@
-import { Library, RefreshCw, Settings, Smartphone } from "lucide-react";
+import {
+	Library,
+	RefreshCw,
+	Settings,
+	Smartphone,
+	Speaker,
+} from "lucide-react";
 
-export type Page = "library" | "devices" | "sync" | "settings";
+export type Page = "library" | "devices" | "sync" | "settings" | "player";
 
 export const pages: {
 	id: Page;
@@ -21,6 +27,11 @@ export const pages: {
 		id: "sync",
 		label: "Sync",
 		icon: RefreshCw,
+	},
+	{
+		id: "player",
+		label: "Player",
+		icon: Speaker,
 	},
 	{
 		id: "settings",
