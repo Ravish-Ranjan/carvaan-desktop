@@ -2,7 +2,7 @@
 
 #include "../../core/AppPaths.hpp"
 
-#include <glib.h>
+#include <gtk/gtk.h>
 
 #include <filesystem>
 #include <stdexcept>
@@ -80,4 +80,14 @@ void PlayerFeatures::playSong(const Json& message) {
             {"id", id}
         });
     }
+}
+
+PlayerFeatures::~PlayerFeatures() {
+    std::filesystem::path dir = AppPaths::tempSongsDirectory();
+    std::error_code ec;
+
+    if (std::filesystem::exists(dir,ec)) {
+        std::filesystem::remove_all(dir, ec);
+    }
+
 }

@@ -129,7 +129,7 @@ WebViewApp::WebViewApp(LibraryManager& libraryManager,SettingsRepository& settin
       ) {}
 
 int WebViewApp::run(int argc, char* argv[]) {
-    application_ = gtk_application_new("org.ravishdev.syncsongsapp",G_APPLICATION_DEFAULT_FLAGS);
+    application_ = gtk_application_new("org.ravishdev.carvaan-desktop",G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(application_,"activate",G_CALLBACK(WebViewApp::activate),this);
 
     const int status = g_application_run(G_APPLICATION(application_),argc,argv);

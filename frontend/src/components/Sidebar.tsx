@@ -4,6 +4,7 @@ import { pages, type Page } from "./pagetype";
 import { useState } from "react";
 import Button from "./ui/button";
 import { clsx } from "cn";
+import MiniPlayer from "./MiniPlayer";
 import type { NavigationParams } from "@/stores/navigationStore";
 
 function Logo({
@@ -91,6 +92,13 @@ function Sidebar({
 					);
 				})}
 			</nav>
+
+			{/* Global mini-player */}
+			<div
+				className={clsx("border-t py-3", sidebarOpen ? "px-3" : "px-2")}
+			>
+				<MiniPlayer collapsed={!sidebarOpen} />
+			</div>
 
 			{/* Status */}
 			<div className="border-t p-4 flex justify-between">
