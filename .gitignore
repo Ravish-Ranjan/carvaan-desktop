@@ -213,3 +213,6 @@ vite.config.ts.timestamp-*
 
 # scripts
 scripts/
+
+# testes
+test.*

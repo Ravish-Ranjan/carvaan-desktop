@@ -11,6 +11,7 @@ import { sizeConverter } from "@/lib/songs";
 import Badge from "./ui/badge";
 import type { SongStatus } from "@/types/song";
 import { clsx } from "cn";
+import useNavigationStore from "@/stores/navigationStore";
 
 const statusMap: Record<SongStatus, string> = {
 	NEW: "bg-gray-500 dark:bg-gray-700",
@@ -24,6 +25,7 @@ const statusMap: Record<SongStatus, string> = {
 
 function SongsTable() {
 	const { songs } = useLibraryStore();
+	const { navigate } = useNavigationStore();
 	return (
 		<>
 			<h2 className="text-xl font-semibold">Songs</h2>
@@ -47,7 +49,12 @@ function SongsTable() {
 							<TableCell className="font-mono">
 								{song.id}
 							</TableCell>
-							<TableCell>{song.name}</TableCell>
+							<TableCell
+								onClick={() => navigate("player", { song })}
+								className="cursor-pointer"
+							>
+								{song.name}
+							</TableCell>
 							<TableCell className="font-mono">
 								{sizeConverter(song.filesize)}
 							</TableCell>

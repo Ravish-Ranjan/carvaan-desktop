@@ -20,6 +20,8 @@ export const initializeLibraryBridge = () => {
 		switch (message.type) {
 			case "library-import-result":
 				console.log(`Imported ${message.imported} song(s)`);
+				requestLibrary();
+				getCombinedSize();
 				break;
 
 			case "library-songs":

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import {
 	getCombinedSize,
@@ -6,13 +6,15 @@ import {
 	requestLibrary,
 } from "@/lib/libraryBridge";
 
-import { pages, type Page } from "@/components/pagetype";
+import { pages } from "@/components/pagetype";
 import Sidebar from "@/components/Sidebar";
 import { Library, Devices, Sync, Settings } from "@/components/sections";
 import { getSettings, initializeConfigureBridge } from "./lib/configureBridge";
+import Player from "./components/sections/Player";
+import useNavigationStore from "./stores/navigationStore";
 
 function App() {
-	const [page, setPage] = useState<Page>("library");
+	const { page, navigate } = useNavigationStore();
 
 	const allCleanup = (cleanupFunctions: (() => void)[]) => {
 		for (const cleanup of cleanupFunctions) {
@@ -21,20 +23,22 @@ function App() {
 	};
 
 	useEffect(() => {
-		const cleanupLibraryBridge = initializeLibraryBridge();
-		const cleanupConfigureBridge = initializeConfigureBridge();
+		const cleanupFuncs: (() => void)[] = [];
+		
+		cleanupFuncs.push(initializeLibraryBridge());
+		cleanupFuncs.push(initializeConfigureBridge());
 
 		requestLibrary();
 		getCombinedSize();
 		getSettings();
 
-		return () => allCleanup([cleanupLibraryBridge, cleanupConfigureBridge]);
+		return () => allCleanup(cleanupFuncs);
 	}, []);
 
 	return (
 		<div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
 			{/* Sidebar */}
-			<Sidebar page={page} setPage={setPage} />
+			<Sidebar page={page} setPage={navigate} />
 			{/* Main content */}
 			<main className="min-w-0 flex-1">
 				<header className="flex h-16 items-center border-b px-6">
@@ -49,6 +53,7 @@ function App() {
 					{page === "devices" && <Devices />}
 					{page === "sync" && <Sync />}
 					{page === "settings" && <Settings />}
+					{page === "player" && <Player />}
 				</div>
 			</main>
 		</div>
