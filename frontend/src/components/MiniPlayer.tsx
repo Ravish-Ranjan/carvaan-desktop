@@ -3,6 +3,8 @@ import { ChevronUp, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import usePlayerStore from "@/stores/playerStore";
 import useNavigationStore from "@/stores/navigationStore";
 import { toggleAudioPlayback, setAudioMuted } from "@/lib/audioEngine";
+import { useEffect, useState } from "react";
+import { getMajorColors } from "@/lib/coverArt";
 
 const DEFAULT_COVER = "/assets/default-cover-art.jpeg";
 
@@ -32,11 +34,38 @@ function MiniPlayer({ collapsed }: MiniPlayerProps) {
 		isMuted,
 	} = usePlayerStore();
 
+	const [accentColors, setAccentColors] = useState([
+		"17 17 19",
+		"17 17 19",
+		"17 17 19",
+	]);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		async function extractColors() {
+			const colors = await getMajorColors(coverArt, 3);
+
+			if (!cancelled) {
+				setAccentColors(colors);
+			}
+		}
+
+		void extractColors();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [coverArt]);
+
 	const navigate = useNavigationStore((state) => state.navigate);
 
 	const hasSong = Boolean(url);
 
-	const progress = duration && duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
+	const progress =
+		duration && duration > 0
+			? Math.min((currentTime / duration) * 100, 100)
+			: 0;
 
 	const openPlayer = () => {
 		if (!hasSong) {
@@ -116,7 +145,35 @@ function MiniPlayer({ collapsed }: MiniPlayerProps) {
 	}
 
 	return (
-		<section className="overflow-hidden rounded-xl border bg-card/70">
+		<section className="relative isolate overflow-hidden rounded-xl border border-border/60 bg-transparent">
+			<div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+				<div
+					className="absolute -top-16 left-1/4 size-48 rounded-full blur-[70px]"
+					style={{
+						backgroundColor: `rgb(${accentColors[1]} / 0.22)`,
+					}}
+				/>
+
+				<div
+					className="absolute -bottom-20 -right-12 size-40 rounded-full blur-[65px]"
+					style={{
+						backgroundColor: `rgb(${accentColors[0]} / 0.24)`,
+					}}
+				/>
+
+				<div
+					className="absolute inset-0"
+					style={{
+						backgroundImage: `
+							linear-gradient(
+								to bottom,
+								transparent 25%,
+								rgb(${accentColors[2]} / 0.06) 100%
+							)
+							`,
+					}}
+				/>
+			</div>
 			{/* Track information */}
 			<button
 				type="button"
@@ -148,7 +205,7 @@ function MiniPlayer({ collapsed }: MiniPlayerProps) {
 			</button>
 
 			{/* Playback progress */}
-			<div className="h-1 bg-muted">
+			<div className="h-1 bg-foreground/10">
 				<div
 					className="h-full bg-primary transition-[width] duration-200"
 					style={{ width: `${progress}%` }}
@@ -184,7 +241,7 @@ function MiniPlayer({ collapsed }: MiniPlayerProps) {
 					title={isPlaying ? "Pause" : "Play"}
 					disabled={!hasSong}
 					onClick={handlePlayback}
-					className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
+					className="flex size-9 items-center justify-center rounded-full transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40 bg-secondary"
 				>
 					{isPlaying ? (
 						<Pause className="size-4" fill="currentColor" />

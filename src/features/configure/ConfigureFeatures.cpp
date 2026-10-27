@@ -157,10 +157,14 @@ void ConfigureFeatures::openPcMusicDirectoryDialog(GtkWindow* parentWindow) {
         gchar* filename = gtk_file_chooser_get_filename(chooser);
 
         if (filename != nullptr) {
+            settingsRepository_.set("pc_music_destination",filename);
+
             sendToReact_(Json{
                 {"type", Protocol::Backend::PC_MUSIC_DIRECTORY_SELECTED},
                 {"path", filename}
             });
+
+
 
             g_free(filename);
         }

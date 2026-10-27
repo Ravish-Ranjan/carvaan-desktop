@@ -79,6 +79,7 @@ function Player() {
 						type="search"
 						placeholder="Search Song"
 						value={query}
+						className="shadow-md shadow-secondary-foreground/30"
 						onChange={(e) => setQuery(e.target.value)}
 					/>
 				</div>

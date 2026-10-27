@@ -64,7 +64,7 @@ void PlayerFeatures::playSong(const Json& message) {
             throw std::runtime_error("Media URL provider returned an empty URL");
         }
 
-        g_message("[Player] Generated media URL: %s", fileurl.c_str());
+        g_print("[Player] Generated media URL: %s\n", fileurl.c_str());
 
         sendToReact_(Json{
             {"type", "song-playing"},

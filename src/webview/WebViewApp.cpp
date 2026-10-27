@@ -556,6 +556,12 @@ void WebViewApp::handleFrontendMessage(const Json& message) {
     } else if (type == Protocol::Frontend::PLAY_SONG) {
         playerFeatures_.playSong(message);
         
+    } else if (type == Protocol::Frontend::SET_PC_MUSIC_DESTINATION) {
+        configureFeatures_.setPcMusicDestination(message);
+
+    } else if (type == Protocol::Frontend::SET_PHONE_DESTINATION) {
+        configureFeatures_.setPhoneDestination(message);
+
     } else {
         g_warning("[Bridge] Unknown frontend event: %s",type.c_str());
     }
@@ -737,7 +743,7 @@ bool WebViewApp::startMediaServer() {
         return false;
     }
 
-    g_message("[Media] HTTP server listening on 127.0.0.1:%u",mediaServerPort_);
+    g_print("[Media] HTTP server listening on 127.0.0.1:%u\n",mediaServerPort_);
 
     return true;
 }
