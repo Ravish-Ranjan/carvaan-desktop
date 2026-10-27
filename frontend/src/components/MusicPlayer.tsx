@@ -11,7 +11,7 @@ import {
 	Volume2,
 	VolumeX,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import usePlayerStore from "@/stores/playerStore";
 import {
@@ -21,6 +21,7 @@ import {
 	setAudioVolume,
 } from "@/lib/audioEngine";
 import { playNextTrack, playPreviousTrack } from "@/lib/playerControls";
+import { getMajorColors } from "@/lib/coverArt";
 
 const DEFAULT_COVER = "/assets/default-cover-art.jpeg";
 
@@ -57,6 +58,11 @@ function MusicPlayer() {
 	const [liked, setLiked] = useState(false);
 	const [artworkError, setArtworkError] = useState(false);
 	const [showRemaining, setShowRemaining] = useState(false);
+	const [accentColor, setAccentColor] = useState<{
+		primary: string;
+		secondary: string;
+		tertiary: string;
+	}>({ primary: "17 17 19", secondary: "17 17 19", tertiary: "17 17 19" });
 
 	const hasSong = Boolean(url);
 
@@ -98,26 +104,68 @@ function MusicPlayer() {
 		setRepeat(repeat === "off" ? "all" : repeat === "all" ? "one" : "off");
 	};
 
+	useEffect(() => {
+		(async function () {
+			const colour = await getMajorColors(coverArt, 3);
+			setAccentColor({
+				primary: colour[0],
+				secondary: colour[1],
+				tertiary: colour[2],
+			});
+			console.log(colour);
+		})();
+	}, [coverArt]);
+
 	return (
-		<div className="relative flex aspect-square w-full h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#111113] text-white">
+		<div
+			className={`relative flex aspect-square w-full h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-transparent`}
+		>
 			{/* Ambient background */}
 			<div className="pointer-events-none absolute inset-0 overflow-hidden">
-				<div className="absolute -top-24 left-1/4 size-96 rounded-full bg-emerald-600/15 blur-[120px]" />
-				<div className="absolute bottom-0 right-0 size-80 rounded-full bg-green-500/10 blur-[110px]" />
-				<div className="absolute inset-0 bg-linear-to-b from-white/[0.035] via-transparent to-black/50" />
+				{/* Top accent glow */}
+				<div
+					className="absolute -top-24 left-1/4 size-96 rounded-full blur-[120px]"
+					style={{
+						backgroundColor: `rgb(${accentColor.tertiary} / 0.28)`,
+					}}
+				/>
+
+				{/* Bottom-right accent glow */}
+				<div
+					className="absolute -bottom-20 -right-20 size-80 rounded-full blur-[110px]"
+					style={{
+						backgroundColor: `rgb(${accentColor.primary} / 0.35)`,
+					}}
+				/>
+
+				{/* Subtle fade at the bottom; no solid background fill */}
+				<div
+					className="absolute inset-0"
+					style={{
+						backgroundImage: `linear-gradient(
+							to bottom,
+							transparent 35%,
+							rgb(${accentColor.secondary} / 0.08) 65%,
+							transparent 100%
+						)`,
+					}}
+				/>
 			</div>
 
 			{/* Header */}
 			<header className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/8 px-4 py-3">
 				<div>
-					<p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+					<p className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground/40">
 						Sync Songs
 					</p>
 					<h1 className="mt-1 text-sm font-semibold">Now Playing</h1>
 				</div>
 
 				<div className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5">
-					<Music2 className="size-4 text-emerald-400" />
+					<Music2
+						className="size-4"
+						style={{ color: `rgb(${accentColor.primary})` }}
+					/>
 				</div>
 			</header>
 			{/* Main player */}
@@ -126,7 +174,12 @@ function MusicPlayer() {
 				<div className="flex min-h-0 items-center gap-4">
 					{/* Album artwork */}
 					<div className="w-[42%] shrink-0">
-						<div className="relative aspect-square overflow-hidden rounded-xl bg-white/5 shadow-xl shadow-black/40 ring-1 ring-white/10">
+						<div
+							className="relative aspect-square overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10"
+							style={{
+								boxShadow: `0px 20px 25px -5px rgba(${accentColor.secondary} / 0.5)`,
+							}}
+						>
 							<img
 								src={
 									artworkError
@@ -143,7 +196,7 @@ function MusicPlayer() {
 							/>
 
 							{!hasSong && (
-								<div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white/50">
+								<div className="absolute inset-0 flex items-center justify-center bg-secondary-forground/20 text-foreground/50">
 									<Music2 className="size-10" />
 								</div>
 							)}
@@ -159,7 +212,7 @@ function MusicPlayer() {
 									: "Nothing playing"}
 							</h2>
 
-							<p className="mt-1 truncate text-sm text-white/55">
+							<p className="mt-1 truncate text-sm text-foreground/55">
 								{hasSong
 									? artist || "Unknown artist"
 									: "Choose a song from your library"}
@@ -167,7 +220,7 @@ function MusicPlayer() {
 							</p>
 
 							{hasSong && album && (
-								<p className="mt-1 truncate text-xs text-white/35">
+								<p className="mt-1 truncate text-xs text-foreground/35">
 									{album}
 								</p>
 							)}
@@ -185,7 +238,7 @@ function MusicPlayer() {
 								className={`size-4 ${
 									liked
 										? "fill-emerald-400 text-emerald-400"
-										: "text-white/55"
+										: "text-foreground/55"
 								}`}
 							/>
 						</button>
@@ -196,7 +249,7 @@ function MusicPlayer() {
 				<div className="w-full">
 					{/* Progress */}
 					<div className="flex items-center gap-2">
-						<span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-white/45">
+						<span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-foreground/45">
 							{displayedTime}
 						</span>
 
@@ -212,7 +265,7 @@ function MusicPlayer() {
 							}
 							aria-label="Playback position"
 							style={{
-								background: `linear-gradient(to right, #34d399 ${progress}%, rgba(255,255,255,0.14) ${progress}%)`,
+								background: `linear-gradient(to right, #14a379 ${progress}%, rgba(255,255,255,0.14) ${progress}%)`,
 							}}
 							className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full disabled:cursor-not-allowed disabled:opacity-40 [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow"
 						/>
@@ -221,7 +274,7 @@ function MusicPlayer() {
 							type="button"
 							title="Toggle remaining time"
 							onClick={() => setShowRemaining((value) => !value)}
-							className="w-9 shrink-0 text-left text-[10px] tabular-nums text-white/45 hover:text-white"
+							className="w-9 shrink-0 text-left text-[10px] tabular-nums text-foreground/45 hover:text-foreground"
 						>
 							{formatTime(duration ?? 0)}
 						</button>
@@ -236,7 +289,9 @@ function MusicPlayer() {
 							disabled={!hasSong}
 							onClick={() => setShuffle(!shuffle)}
 							className={`flex size-8 items-center justify-center rounded-full transition hover:bg-white/10 disabled:opacity-30 ${
-								shuffle ? "text-emerald-400" : "text-white/45"
+								shuffle
+									? "text-emerald-400"
+									: "text-foreground/45"
 							}`}
 						>
 							<Shuffle className="size-4" />
@@ -247,7 +302,7 @@ function MusicPlayer() {
 							title="Previous track"
 							disabled={!hasSong}
 							onClick={playPreviousTrack}
-							className="flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 disabled:opacity-30"
+							className="flex size-8 items-center justify-center rounded-full text-foreground/80 transition hover:bg-white/10 disabled:opacity-30"
 						>
 							<SkipBack className="size-4" fill="currentColor" />
 						</button>
@@ -274,7 +329,7 @@ function MusicPlayer() {
 							title="Next track"
 							disabled={!hasSong}
 							onClick={playNextTrack}
-							className="flex size-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 disabled:opacity-30"
+							className="flex size-8 items-center justify-center rounded-full text-foreground/80 transition hover:bg-white/10 disabled:opacity-30"
 						>
 							<SkipForward
 								className="size-4"
@@ -291,7 +346,7 @@ function MusicPlayer() {
 							className={`flex size-8 items-center justify-center rounded-full transition hover:bg-white/10 disabled:opacity-30 ${
 								repeat !== "off"
 									? "text-emerald-400"
-									: "text-white/45"
+									: "text-foreground/45"
 							}`}
 						>
 							{repeat === "one" ? (
@@ -309,7 +364,7 @@ function MusicPlayer() {
 							title={isMuted ? "Unmute" : "Mute"}
 							disabled={!hasSong}
 							onClick={handleMute}
-							className="flex size-7 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+							className="flex size-7 shrink-0 items-center justify-center rounded-full text-foreground/50 transition hover:bg-white/10 hover:text-foreground disabled:opacity-30"
 						>
 							{isMuted || volume === 0 ? (
 								<VolumeX className="size-4" />
@@ -329,10 +384,10 @@ function MusicPlayer() {
 								handleVolumeChange(Number(event.target.value))
 							}
 							aria-label="Volume"
-							className="h-1 w-32 max-w-full cursor-pointer accent-emerald-400 disabled:cursor-not-allowed disabled:opacity-30"
+							className="h-1 w-32 max-w-full cursor-pointer accent-emerald-500 disabled:cursor-not-allowed disabled:opacity-30"
 						/>
 
-						<span className="w-8 shrink-0 text-xs tabular-nums text-white/40">
+						<span className="w-8 shrink-0 text-xs tabular-nums text-foreground	/40">
 							{Math.round((isMuted ? 0 : volume) * 100)}%
 						</span>
 					</div>

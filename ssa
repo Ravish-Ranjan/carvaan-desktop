@@ -65,7 +65,7 @@ for arg in "${args[@]}"; do
         install
     elif [ "$arg" == "build-deb" ]; then
         build-deb
-    elif [ "$arg" == "run" ]; then
+    elif [ "$arg" == "run-dev" ]; then
         run
     elif [ "$arg" == "cleardb" ]; then
         cleardb

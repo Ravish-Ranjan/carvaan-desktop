@@ -25,6 +25,24 @@ export const initializeConfigureBridge = () => {
 					});
 				}
 				break;
+
+			case "phone-destination":
+				console.log(message);
+				if (typeof message.path === "string") {
+					useConfigureStore
+						.getState()
+						.setPhoneDestination(message.path);
+				}
+				break;
+
+			case "pc-music-destination":
+				console.log(message);
+				if (typeof message.path === "string") {
+					useConfigureStore
+						.getState()
+						.setPcMusicDestination(message.path);
+				}
+				break;
 		}
 	});
 };
@@ -39,3 +57,9 @@ export const setPhoneDestination = (path: string) =>
 
 export const setPcMusicDestination = (path: string) =>
 	sendToBackend({ type: "set-pc-music-destination", path });
+
+export const getPhoneDestination = () =>
+	sendToBackend({ type: "get-phone-destination" });
+
+export const getPcMusicDestination = () =>
+	sendToBackend({ type: "get-pc-music-destination" });
